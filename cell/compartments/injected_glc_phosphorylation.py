@@ -6,12 +6,11 @@ Toy Injected Glucose Phosphorylation Compartment
 This is a toy example referenced in the documentation.
 """
 
-from vivarium.processes.glucose_phosphorylation import (
-    GlucosePhosphorylation,
-)
 from vivarium.core.experiment import Experiment
 from vivarium.core.process import Generator
 from vivarium.library.pretty import format_dict
+
+from cell.processes.glucose_phosphorylation import GlucosePhosphorylation
 from cell.processes.injector import Injector
 
 

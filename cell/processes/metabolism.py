@@ -110,7 +110,7 @@ class Metabolism(Process):
     name = NAME
     defaults = {
         'constrained_reaction_ids': [],
-        'model_path': 'models/iAF1260b.json',
+        'model_path': 'cell/bigg_models/iAF1260b.json',
         'default_upper_bound': 0.0,
         'regulation': {},
         'initial_state': {},
@@ -385,7 +385,7 @@ def get_e_coli_core_config():
         A configuration for the model that can be passed to the
         :py:class:`Metabolism` constructor.
     """
-    metabolism_file = os.path.join('models', 'e_coli_core.json')
+    metabolism_file = os.path.join('cell', 'bigg_models', 'e_coli_core.json')
     return {'model_path': metabolism_file}
 
 def get_iAF1260b_config():
@@ -398,7 +398,7 @@ def get_iAF1260b_config():
         A configuration for the model that can be passed to the
         :py:class:`Metabolism` constructor.
     """
-    metabolism_file = os.path.join('models', 'iAF1260b.json')
+    metabolism_file = os.path.join('cell', 'bigg_models', 'iAF1260b.json')
     return {'model_path': metabolism_file}
 
 def get_toy_configuration():
