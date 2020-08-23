@@ -1,0 +1,17 @@
+# aerobic environment with glucose and glucose-6-phosphate carbon sources.
+# Kremling, Bettenbrock, & Gilles. (2007). Analysis of global control of Escherichia coli carbohydrate uptake
+"molecule id"	"concentration (units.mmol / units.L)"
+"ACET"	0.0
+"CO+2"	100.0
+"ETOH"	0.0
+"FORMATE"	0.0
+"GLYCEROL"	0.0
+"LAC"	0.0
+"LCTS"	0.0
+"OXYGEN-MOLECULE"	100.0
+"PI"	100.0
+"PYR"	0.0
+"RIB"	0.0
+"SUC"	0.0
+"G6P"	1.3451
+"GLC"	12.2087

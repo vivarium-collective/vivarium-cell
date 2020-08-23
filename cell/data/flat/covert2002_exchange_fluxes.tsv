@@ -1,0 +1,15 @@
+"Reaction"	"Protein"	"Gene"	"Stoichiometry"	"Regulatory Logic""
+"ACex"			{"ACET[e]": -1}
+"CO2ex"			{"CO+2[e]": -1}
+"ETHex"			{"ETOH[e]": -1}
+"FORex"			{"FORMATE[e]": -1}
+"GLCex"			{"GLC[e]": -1}
+"GLex"			{"GLYCEROL[e]": -1}
+"Growth"			{"mass": -1, "ATP": -13, "ADP": 13, "PI": 13}
+"LACex"			{"LAC[e]": -1}
+"LCTSex"			{"LCTS[e]": -1}
+"O2ex"			{"OXYGEN-MOLECULE[e]": -1}
+"PIex"			{"PI[e]": -1}
+"PYRex"			{"PYR[e]": -1}
+"RIBex"			{"RIB[e]": -1}
+"SUCCex"			{"SUC[e]": -1}

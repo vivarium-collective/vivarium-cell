@@ -12,11 +12,9 @@ from arrow import StochasticSystem
 
 from vivarium.core.process import Process
 from vivarium.core.experiment import pp
-from vivarium.data.amino_acids import amino_acids
-from vivarium.data.molecular_weight import molecular_weight
-from vivarium.library.datum import Datum
-from vivarium.library.polymerize import Elongation, Polymerase, Template, build_stoichiometry, all_products, generate_template
-from vivarium.library.dict_utils import deep_merge
+from cell.data.amino_acids import amino_acids
+from cell.data.molecular_weight import molecular_weight
+from cell.library.polymerize import Elongation, Polymerase, Template, build_stoichiometry, all_products, generate_template
 
 class Ribosome(Polymerase):
     pass

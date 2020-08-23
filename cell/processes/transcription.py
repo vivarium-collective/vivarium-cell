@@ -15,9 +15,9 @@ from vivarium.library.dict_utils import deep_merge, keys_list
 from vivarium.core.experiment import pp, pf
 from vivarium.core.process import Process
 from vivarium.core.composition import process_in_experiment
-from vivarium.states.chromosome import Chromosome, Rnap, Promoter, frequencies, add_merge, toy_chromosome_config
-from vivarium.library.polymerize import Elongation, build_stoichiometry, template_products
-from vivarium.data.nucleotides import nucleotides
+from cell.states.chromosome import Chromosome, Rnap, Promoter, frequencies, add_merge, toy_chromosome_config
+from cell.library.polymerize import Elongation, build_stoichiometry, template_products
+from cell.data.nucleotides import nucleotides
 
 def choose_element(elements):
     if elements:

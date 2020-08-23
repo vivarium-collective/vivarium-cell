@@ -1,0 +1,80 @@
+"Reaction"	"Protein"	"Gene"	"Stoichiometry"	"Regulatory Logic"	"Reversible"
+"ACEA"		"aceA"	{"ICIT": -1, "GLX": 1, "SUC":1}	"IF not (IclR)"	false
+"ACEB"		"aceB"	{"ACCOA": -1, "GLX": -1, "COA": 1, "MAL": 1}	"IF not (ArcA or IclR)"	false
+"ACEE"		"aceEF, lpdA"	{"PYR": -1, "COA": -1, "NAD": -1, "NADH": 1, "CO2": 1, "ACCOA": 1}	"IF (not PdhR)"	false
+"ACKAR"		"ackA"	{"ACTP": -1, "ADP": -1, "ATP": 1, "AC": 1}		true
+"ACNAR"		"acnA"	{"CIT": -1, "ICIT": 1}	"IF (GLC[e] or LCTS[e] or RIB[e] or GLYCEROL[e] or LAC[e] or PYR[e] or SUC[e] or ETOH[e] or ACET[e] or FORMATE[e])"	true
+"ACNBR"		"acnB"	{"CIT": -1, "ICIT": 1}	"IF (GLC[e] or LCTS[e] or RIB[e] or GLYCEROL[e] or LAC[e] or PYR[e] or SUC[e] or ETOH[e] or ACET[e] or FORMATE[e])"	true
+"ACS"		"acs"	{"ATP": -1, "AC": -1, "COA": -1, "AMP": 1, "PPI": 1, "ACCOA": 1}	"IF not (GLC[e] or LCTS[e] or RIB[e] or GLYCEROL[e] or LAC[e] or PYR[e] or SUC[e] or ETOH[e]) and (not IclR)"	false
+"ADHER"		"adhE"	{"ACCOA": -1, "NADH": -2, "ETH": 1, "NAD": 2, "COA": 1}	"IF not (OXYGEN-MOLECULE[e]) or not (OXYGEN-MOLECULE[e] and Cra)"	true
+"ADK"		"adk"	{"ATP": -1, "AMP": -1, "ADP": 2}		true
+"ATPAR"		"atpABCDEFGHI"	{"ATP": -1, "ADP": 1, "PI": 1, "HEXT": 4}		true
+"CYDA"		"cydAB"	{"QH2": -1, "OXYGEN-MOLECULE": -0.5, "Q": 1, "HEXT": 2}	"IF (not FNR) or ArcA"	false
+"CYOA"		"cyoABCD"	{"QH2": -1, "OXYGEN-MOLECULE": -0.5, "Q": 1, "HEXT": 2.5}	"IF not (ArcA or FNR)"	false
+"DLD1R"		"dld"	{"PYR": -1, "NADH": -1, "NAD": 1, "LAC": 1}		true
+"DLD2"		"dld"	{"LAC": -1, "Q": -1, "PYR": 1, "QH2": 1}		false
+"ENOR"		"eno"	{"2PG": -1, "PEP": 1}		true
+"FBAR"		"fba"	{"FDP": -1, "T3P1": 1, "T3P2": 1}		true
+"FBP"		"fbp"	{"FDP": -1, "F6P": 1, "PI": 1}		false
+"FDNG"		"fdnGHI"	{"FOR": -1, "Q": -1, "QH2": 1, "CO2": 1, "HEXT": 2}	"IF FNR"	false
+"FDOH"		"fdoIHG"	{"FOR": -1, "Q": -1, "QH2": 1, "CO2": 1, "HEXT": 2}		false
+"FRDA"		"frdABCD"	{"FUM": -1, "FADH": -1, "SUC": 1, "FAD": 1}	"IF FNR or DcuR"	false
+"FUMAR"		"fumA"	{"FUM": -1, "MAL": 1}	"IF not (ArcA or FNR)"	true
+"FUMBR"		"fumB"	{"FUM": -1, "MAL": 1}	"IF FNR"	true
+"FUMCR"		"fumC"	{"FUM": -1, "MAL": 1}	"IF (superoxide_radicals)"	true
+"GALER"		"galE"	{"UDPGAL": -1, "UDPG": 1}	"IF not (GLC[e]) and not (GalR or GalS)"	true
+"GALKR"		"galK"	{"GLAC": -1, "ATP": -1, "GAL1P": 1, "ADP": 1}	"IF not (GLC[e]) and not (GalR or GalS)"	true
+"GALM1R"		"galM"	{"bDGLAC": -1, "GLAC": 1}	"IF not (GLC[e]) and not (GalR or GalS)"	true
+"GALM2R"		"galM"	{"bDGLC": -1, "GLC": 1}	"IF not (GLC[e]) and not (GalR or GalS)"	true
+"GALTR"		"galT"	{"GAL1p": -1, "UTP": -1, "PPI": 1, "UDPGAL": 1}	"IF not (GLC[e]) and not (GalR or GalS)"	true
+"GALUR"		"galU"	{"G1P": -1, "UTP": -1, "UDPG": 1, "PPI": 1}		true
+"GAPAR"		"gapA"	{"T3P1": -1, "PI": -1, "NAD": -1, "NADH": 1, "PDG": 13}		true
+"GLK"		"glk"	{"GLC": -1, "ATP": -1, "G6P": 1, "ADP": 1}		false
+"GLPA"		"glpABC"	{"GL3P": -1, "Q": -1, "T3P2": 1, "QH2": 1}	"IF not (GLC[e] or LCTS[e] or RIB[e]) and FNR and not GlpR"	false
+"GLPD"		"glpD"	{"GL3P": -1, "Q": -1, "T3P2": 1, "QH2": 1}	"IF not (GLC[e] or LCTS[e] or RIB[e]) and not (ArcA or GlpR)"	false
+"GLPK"		"glpK"	{"GL": -1, "ATP": -1, "GL3P": 1, "ADP": 1}	"IF not (GLC[e] or LCTS[e] or RIB[e]) and not GlpR"	false
+"GLTA"		"gltA"	{"ACCOA": -1, "OA": -1, "COA": 1, "CIT": 1}		false
+"GND"		"gnd"	{"D6PGC": -1, "NADP": -1, "NADPH": 1, "CO2": 1, "RL5P": 1}		false
+"GPMAR"		"gpmA"	{"3PG": -1, "2PG": 1}		true
+"GPMBR"		"gpmB"	{"3PG": -1, "2PG": 1}		true
+"GPSAR"		"gpsA"	{"GL3P": -1, "NADP": -1, "T3P2": 1, "NADPH": 1}		true
+"ICDAR"		"icdA"	{"ICIT": -1, "NADP": -1, "CO2": 1, "NADPH": 1, "AKG": 1}		true
+"LACZ"		"lacZ"	{"LCTS": -1, "GLC": 1, "bDGLAC": 1}	"IF not (GLC[e]) and not (lacI)"	false
+"MAEB"		"maeB"	{"MAL": -1, "NADP": -1, "CO2": 1, "NADPH": 1, "PYR": 1}		false
+"MDHR"		"mdh"	{"MAL": -1, "NAD": -1, "NADH": 1, "OA": 1}	"IF not ArcA"	true
+"NDH"		"ndh"	{"NADH": -1, "Q": -1, "NAD": 1, "QH2": 1}	"IF not FNR"	false
+"NUOA"		"nuoABEFGHIJKLMN"	{"NADH": -1, "Q": -1, "NAD": 1, "QH2": 1, "HEXT": 3.5}		false
+"PCKA"		"pckA"	{"OA": -1, "ATP": -1, "PEP": 1, "CO2": 1, "ADP": 1}		false
+"PFKA"		"pfkA"	{"F6P": -1, "ATP": -1, "FDP": 1, "ADP": 1}		false
+"PFKB"		"pfkB"	{"F6P": -1, "ATP": -1, "FDP": 1, "ADP": 1}		false
+"PFLA"		"pflAB"	{"PYR": -1, "COA": -1, "ACCOA": 1, "FOR": 1}	"IF (ArcA or FNR)"	false
+"PFLC"		"pflCD"	{"PYR": -1, "COA": -1, "ACCOA": 1, "FOR": 1}	"IF (ArcA or FNR)"	false
+"PGIR"		"pgi"	{"G6P": -1, "F6P": 1}		true
+"PGKR"		"pgk"	{"PDG": -13, "ADP": -1, "3PG": 1, "ATP": 1}	"IF (GLC[e] or LCTS[e] or RIB[e] or GLYCEROL[e] or LAC[e] or PYR[e] or SUC[e] or ETOH[e] or ACET[e] or FORMATE[e])"	true
+"PGL"		"pgl"	{"D6PGL": -1, "D6PGC": 1}		false
+"PGMR"		"pgm"	{"G1P": -1, "G6P": 1}		true
+"PNTA1"		"pntAB"	{"NADPH": -1, "NAD": -1, "NADP": 1, "NADH": 1}		false
+"PNTA2"		"pntAB"	{"NADP": -1, "NADH": -1, "HEXT": -2, "NADPH": 1, "NAD": 1}		false
+"PPA"		"ppa"	{"PPI": -1, "PI": 2}		false
+"PPC"		"ppc"	{"PEP": -1, "CO2": -1, "OA": 1, "PI": 1}		false
+"PPSA"		"ppsA"	{"PYR": -1, "ATP": -1, "PEP": 1, "AMP": 1, "PI": 1}	"IF (Cra)"	false
+"PTAR"		"pta"	{"ACCOA": -1, "PI": -1, "ACTP": 1, "COA": 1}		true
+"PYKA"		"pykA"	{"PEP": -1, "ADP": -1, "PYR": 1, "ATP": 1}		false
+"PYKF"		"pykF"	{"PEP": -1, "ADP": -1, "PYR": 1, "ATP": 1}	"IF (not Cra)"	false
+"RBSK"		"rbsK"	{"RIB": -1, "ATP": -1, "R5P": 1, "ADP": 1}	"IF not (GLC[e] or LCTS[e]) and not (RbsR)"	false
+"RPER"		"rpe"	{"RL5P": -1, "X5P": 1}		true
+"RPIAR"		"rpiA"	{"RL5P": -1, "R5P": 1}		true
+"RPIBR"		"rpiB"	{"RL5P": -1, "R5P": 1}	"IF not RpiR"	true
+"SDHA1"		"sdhABCD"	{"SUC": -1, "FAD": -1, "FADH": 1, "FUM": 1}	"IF not (ArcA or FNR)"	false
+"SDHA2"		"sdhABCD"	{"FADH": -1, "Q": -1, "FAD": 1, "QH2": 1}	"IF not (ArcA or FNR)"	true
+"SFCA"		"sfcA"	{"MAL": -1, "NAD": -1, "CO2": 1, "NADH": 1, "PYR": 1}		false
+"SUCA"		"sucAB, lpdA"	{"AKG": -1, "NAD": -1, "COA": -1, "CO2": 1, "NADH": 1, "SUCCOA": 1}	"IF (not PdhR)"	false
+"SUCCR"		"sucCD"	{"SUCCOA": -1, "ADP": -1, "PI": -1, "ATP": 1, "COA": 1, "SUC": 1}		true
+"TALAR"		"talA"	{"T3P1": -1, "S7P": -1, "E4P": 1, "F6P": 1}		true
+"TALBR"		"talB"	{"T3P1": -1, "S7P": -1, "E4P": 1, "F6P": 1}		true
+"TKTA1R"		"tktA"	{"R5P": -1, "X5P": -1, "T3P1": 1, "S7P": 1}		true
+"TKTA2R"		"tktA"	{"X5P": -1, "E4P": -1, "F6P": 1, "T3P1": 1}		true
+"TKTB1R"		"tktB"	{"R5P": -1, "X5P": -1, "T3P1": 1, "S7P": 1}		true
+"TKTB2R"		"tktB"	{"X5P": -1, "E4P": -1, "F6P": 1, "T3P1": 1}		true
+"TPIAR"		"tpiA"	{"T3P1": -1, "T3P2": 1}		true
+"ZWFR"		"zwf"	{"G6P": -1, "NADP": -1, "D6PGL": 1, "NADPH": 1}		true

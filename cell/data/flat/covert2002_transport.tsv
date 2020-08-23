@@ -1,0 +1,19 @@
+"Reaction"	"Protein"	"Gene"	"Stoichiometry"	"Regulatory Logic" 	"Reversible"
+"ACUPR"			{"ACET[e]": -1, "HEXT": -1, "AC": 1}		true
+"CO2TXR"			{"CO+2[e]": -1, "CO2": 1}		true
+"ETHUPR"			{"ETOH[e]": -1, "HEXT": -1, "ETH": 1}		true
+"FORUPR"		"focA"	{"FORMATE[e]": -1, "FOR": 1}	"IF (ArcA or FNR)"	true
+"GLCPTS"		"ptsGHI, crr"	{"GLC[e]": -1, "PEP": -1, "G6P": 1, "PYR": 1}	"IF ((GLC[e] or LCTS[e] or RIB[e] or GLYCEROL[e] or LAC[e] or PYR[e] or SUC[e] or ETOH[e] or ACET[e] or FORMATE[e]) and not Mlc) or ((GLC[e] or LCTS[e] or RIB[e] or GLYCEROL[e] or LAC[e] or PYR[e] or SUC[e] or ETOH[e] or ACET[e] or FORMATE[e]) and not Cra)"	false
+"GLCUP"		"galP, etc."	{"GLC[e]": -1, "HEXT": -1, "GLC": 1}	"IF (GLC[e] or LCTS[e] or RIB[e] or GLYCEROL[e] or LAC[e] or PYR[e] or SUC[e] or ETOH[e] or ACET[e] or FORMATE[e])"	false
+"GLUPR"		"glpF"	{"GLYCEROL[e]": -1, "GL": 1}	"IF not (GLC[e] or LCTS[e] or RIB[e]) and not GlpR"	true
+"LACUP"			{"LAC[e]": -1, "HEXT": -1, "LAC": 1}	"IF not (GLC[e] or LCTS[e] or RIB[e] or GLYCEROL[e])"	false
+"LACDN"			{"LAC": -1, "LAC[e]": 1, "HEXT": 1}		false
+"LACYR"		"lacY"	{"LCTS[e]": -1, "HEXT": -1, "LCTS": 1}	"IF not (GLC[e]) and not (lacI)"	true
+"O2TXR"			{"OXYGEN-MOLECULE[e]": -1, "OXYGEN-MOLECULE": 1}		true
+"PIUP2R"		"pitAB"	{"PI[e]": -1, "HEXT": -1, "PI": 1}		true
+"PYRUPR"			{"PYR[e]": -1, "HEXT": -1, "PYR": 1}		true
+"RIBUPR"		"rbsABCD"	{"RIB[e]": -1, "ATP": -1, "RIB": 1, "ADP": 1, "PI": 1}	"IF not (GLC[e] or LCTS[e]) and not RbsR"	false
+"DCTAR"		"dctA"	{"SUC[e]": -1, "HEXT": -1, "SUC": 1}	"IF not (GLC[e] or LSCTS[e] or RIB[e] or GLYCEROL[e] or LAC[e] or PYR[e]) and not ArcA and DcuR"	true
+"DCUAR"		"dcuA"	{"SUC[e]": -1, "HEXT": -1, "SUC": 1}		true
+"DCUBR"		"dcuB"	{"SUC[e]": -1, "HEXT": -1, "SUC": 1}	"IF not (GLC[e] or LCTS[e] or RIB[e] or GLYCEROL[e] or LAC[e] or PYR[e]) and FNR and DcuR"	true
+"DCUC"		"dcuC"	{"SUC[e]": -1, "HEXT": -1, "SUC": 1}	"IF (FNR or ArcA)"	false

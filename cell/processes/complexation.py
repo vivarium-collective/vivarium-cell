@@ -1,6 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-import copy
 import numpy as np
 from arrow import StochasticSystem
 
@@ -9,8 +8,8 @@ from vivarium.core.process import Process
 from vivarium.core.composition import simulate_process_in_experiment
 
 from vivarium.library.dict_utils import keys_list
-from vivarium.data.molecular_weight import molecular_weight
-from vivarium.data.chromosomes.flagella_chromosome import FlagellaChromosome
+from cell.data.molecular_weight import molecular_weight
+from cell.data.chromosomes.flagella_chromosome import FlagellaChromosome
 
 chromosome = FlagellaChromosome()
 

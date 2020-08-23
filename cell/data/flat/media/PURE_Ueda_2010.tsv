@@ -1,0 +1,69 @@
+"molecule id"	"concentration (units.mmol / units.L)"
+"Glycine"	0.1
+"Alanine"	0.1
+"Valine"	0.1
+"Leucine"	0.1
+"Isoleucine"	0.1
+"Proline"	0.1
+"Phenylalanine"	0.1
+"Tyrosine"	0.1
+"Tryptophan"	0.1
+"Serine"	0.1
+"Threonine"	0.1
+"Cysteine"	0.1
+"Methionine"	0.1
+"Asparagine"	0.1
+"Glutamine"	0.1
+"Lysine"	0.1
+"Arginine"	0.1
+"Histidine"	0.1
+"Aspartate"	0.1
+"Glutamate"	0.1
+"rATP"	2
+"rGTP"	2
+"rUTP"	1
+"rCTP"	1
+"Creatine Phosphate"	20
+"Hepes-KOH (pH 7.6)""	50
+"Potassium Glutamate"	100
+"Magnesium Acetate"	13
+"Spermidine"	2
+"DTT"	1
+"Ribosome"	0.0012
+# "E. coli tRNA Mixtures"	54	OD260 / mL
+# "10-formyl-5,6,7,8-tetrahydrofolic acid"	10	µg / mL
+# "Alanyl-tRNA Synthetase"	69	µg / mL
+# "Arginiyl-tRNA Synthetase"	2	µg / mL
+# "Aspartaginyl-tRNA Synthetase"	22	µg / mL
+# "Aspartate-tRNA Synthetase"	8	µg / mL
+# "Cysteinyl-tRNA Synthetase"	1.2	µg / mL
+# "Glutaminyl-tRNA Synthetase"	3.8	µg / mL
+# "Glutamyl-tRNA Synthetase"	12.6	µg / mL
+# "Glycyl-tRNA Synthetase"	9.6	µg / mL
+# "Histidyl-tRNA Synthetase"	0.8	µg / mL
+# "Isoleucyl-tRNA Synthetase"	40	µg / mL
+# "Leucyl-tRNA Synthetase"	4	µg / mL
+# "Lysyl-tRNA Synthetase"	6.4	µg / mL
+# "Methionyl-tRNA Synthetase"	2.1	µg / mL
+# "Phenylalanyl-tRNA Synthetase"	17	µg / mL
+# "Prolyl-tRNA Synthetase"	10	µg / mL
+# "Seryl-tRNA Synthetase"	1.9	µg / mL
+# "Threonyl-tRNA Synthetase"	6.3	µg / mL
+# "Tryptophanyl-tRNA Synthetase"	1.1	µg / mL
+# "Tyrosyl-tRNA Synthetase"	0.6	µg / mL
+# "Valyl-tRNA Synthetase"	1.8	µg / mL
+# "Methionyl-tRNA Formyltransferase"	20	µg / mL
+# "Initiation Factor 1"	10	µg / mL
+# "Initiation Factor 2"	40	µg / mL
+# "Initiation Factor 3"	10	µg / mL
+# "Elongation Factor G"	50	µg / mL
+# "Elongation Factor Tu"	100	µg / mL
+# "Elongation Factor Ts"	50	µg / mL
+# "Release Factor" 1	10	µg / mL
+# "Release Factor" 3	10	µg / mL
+# "Ribosome Recycling Factor"	10	µg / mL
+# "Creatine Kinase"	4	µg / mL
+# "Myokinase"	3	µg / mL
+# "Nucleotide diphosphate kinase"	1.1	µg / mL
+# "Pyrophosphatase"	1	µg / mL
+# "T7 RNA Polymerase"	1	µg / mL

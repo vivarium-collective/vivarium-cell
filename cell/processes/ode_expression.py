@@ -19,8 +19,8 @@ from vivarium.core.composition import (
     plot_simulation_output,
     PROCESS_OUT_DIR,
 )
-from vivarium.library.regulation_logic import build_rule
 from vivarium.library.units import units
+from cell.library.regulation_logic import build_rule
 from vivarium.processes.derive_globals import AVOGADRO
 
 

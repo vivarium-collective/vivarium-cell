@@ -1,0 +1,14 @@
+from vivarium.library.datum import Datum
+
+class Protein(Datum):
+    defaults = {
+        'id': '',
+        'sequence': ''}
+
+    def __init__(self, config):
+        super(Protein, self).__init__(config)
+
+GFP = Protein({
+    'id': 'GFP',
+    'sequence': 'MSKGEELFTGVVPILVELDGDVNGHKFSVSGEGEGDATYGKLTLKFICTTGKLPVPWPTLVTTFSYGVQCFSRYPDHMKQHDFFKSAMPEGYVQERTIFFKDDGNYKTRAEVKFEGDTLVNRIELKGIDFKEDGNILGHKLEYNYNSHNVYIMADKQKNGIKVNFKIRHNIEDGSVQLADHYQQNTPIGDGPVLLPDNHYLSTQSALSKDPNEKRDHMVLLEFVTAAGITHGMDELYK'})
+

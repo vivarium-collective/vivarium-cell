@@ -1,0 +1,69 @@
+"molecule id"	"concentration (units.mmol / units.L)"
+"Glycine"	0.300
+"Alanine"	0.300
+"Valine"	0.300
+"Leucine"	0.300
+"Isoleucine"	0.300
+"Proline"	0.300
+"Phenylalanine"	0.300
+"Tyrosine"	0.300
+"Tryptophan"	0.300
+"Serine"	0.300
+"Threonine"	0.300
+"Cysteine"	0.300
+"Methionine"	0.300
+"Asparagine"	0.300
+"Glutamine"	0.300
+"Lysine"	0.300
+"Arginine"	0.300
+"Histidine"	0.300
+"Aspartate"	0.300
+"Glutamate"	0.300
+"rATP"	3.750
+"rGTP"	2.500
+"rUTP"	1.250
+"rCTP"	1.250
+"Creatine Phosphate"	25.000
+"Potassium Glutamate"	280.000
+"Magnesium Acetate"	24.500
+"Spermidine"	1.500
+"DTT"	1.500
+"Alanyl-tRNA Synthetase"	0.000728
+"Arginiyl-tRNA Synthetase"	0.000031
+"Aspartaginyl-tRNA Synthetase"	0.000422
+"Aspartate-tRNA Synthetase"	0.000123
+"Cysteinyl-tRNA Synthetase"	0.000024
+"Glutaminyl-tRNA Synthetase"	0.000060
+"Glutamyl-tRNA Synthetase"	0.000230
+"Glycyl-tRNA Synthetase"	0.000084
+"Histidyl-tRNA Synthetase"	0.000084
+"Isoleucyl-tRNA Synthetase"	0.000368
+"Leucyl-tRNA Synthetase"	0.000041
+"Lysyl-tRNA Synthetase"	0.000115
+"Methionyl-tRNA Synthetase"	0.000107
+"Phenylalanyl-tRNA Synthetase"	0.000130
+"Prolyl-tRNA Synthetase"	0.000169
+"Seryl-tRNA Synthetase"	0.000077
+"Threonyl-tRNA Synthetase"	0.000084
+"Tryptophanyl-tRNA Synthetase"	0.000028
+"Tyrosyl-tRNA Synthetase"	0.000153
+"Valyl-tRNA Synthetase"	0.000017
+"Methionyl-tRNA Formyltransferase"	0.000590
+"Initiation Factor 1"	0.024533
+"Initiation Factor 2"	0.000997
+"Initiation Factor 3"	0.001227
+"Elongation Factor G"	0.001073
+"Elongation Factor Tu"	0.007667
+"Elongation Factor Ts"	0.003297
+"Release Factor 1"	0.000049
+"Release Factor 3"	0.000169
+"Ribosome Recycling Factor"	0.003910
+"Creatine Kinase"	0.000245
+"Myokinase"	0.001380
+"Nucleotide diphosphate kinase"	0.000016
+"Pyrophosphatase"	0.000041
+"RNA Polymerase"	0.000650
+"Ribosome"	0.019500
+"Release Factor 2"	0.000169
+# "E. coli tRNA Mixtures"	24.000	µg / µL
+# "10-formyl-5,6,7,8-tetrahydrofolic acid"	10.000	µg / mL

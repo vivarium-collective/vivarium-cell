@@ -1,0 +1,3 @@
+"Reaction"	"Protein"	"Gene"	"Stoichiometry"	"Regulatory Logic""
+"ATPM"			{"ATP": -1, "ADP": 1, "PI": 1}
+"VGRO"			{"ATP": -41.25, "NAD": -3.54, "NADPH": -18.22, "G6P": -0.2, "F6P": -0.07, "R5P": -0.89, "E4P": -0.36, "T3P1": -0.12, "3PG": -1.49, "PEP": -0.51, "PYR": -2.83, "ACCOA": -3.74, "OA": -1.78, "AKG": -1.07, "COA": 3.74, "ADP": 41.25, "PI": 41.25, "NADH": 3.54, "NADP": 18.22, "mass": 1.0}
