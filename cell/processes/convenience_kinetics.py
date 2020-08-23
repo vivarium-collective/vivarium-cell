@@ -43,9 +43,11 @@ from vivarium.core.composition import (
     PROCESS_OUT_DIR,
     assert_timeseries_close,
 )
-from vivarium.library.kinetic_rate_laws import KineticFluxModel
 from vivarium.library.dict_utils import tuplify_port_dicts
 from vivarium.library.units import units, remove_units
+
+# vivarium-cell imports
+from cell.library.kinetic_rate_laws import KineticFluxModel
 
 
 #: The name of the process, which is used to name the subdirectory under

@@ -36,13 +36,15 @@ from vivarium.library.make_network import (
     make_network,
     save_network
 )
-from vivarium.data.synonyms import get_synonym
 from vivarium.library.units import units
-from vivarium.library.cobra_fba import CobraFBA
 from vivarium.library.dict_utils import tuplify_port_dicts
-from vivarium.library.regulation_logic import build_rule
-from vivarium.plots.metabolism import plot_exchanges, BiGG_energy_carriers, energy_synthesis_plot
 from vivarium.processes.derive_globals import AVOGADRO
+
+from cell.library.cobra_fba import CobraFBA
+from cell.library.regulation_logic import build_rule
+from cell.data.synonyms import get_synonym
+from cell.plots.metabolism import plot_exchanges, BiGG_energy_carriers, energy_synthesis_plot
+
 
 
 NAME = 'metabolism'

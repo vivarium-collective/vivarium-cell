@@ -10,8 +10,9 @@ from vivarium.core.composition import (
     plot_simulation_output,
     PROCESS_OUT_DIR,
 )
-from vivarium.data.nucleotides import nucleotides
 from vivarium.library.units import units
+
+from cell.data.nucleotides import nucleotides
 
 
 NAME = 'rna_degradation'

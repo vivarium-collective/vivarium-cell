@@ -20,7 +20,6 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
 # vivarium imports
-from vivarium.library.pymunk_multibody import PymunkMultibody
 from vivarium.library.units import units, remove_units
 from vivarium.core.emitter import timeseries_from_data
 from vivarium.core.process import Process
@@ -32,8 +31,9 @@ from vivarium.core.composition import (
 from vivarium.processes.coarse_motor import run, tumble
 from vivarium.processes.derive_globals import volume_from_length
 
-# plotting
-from vivarium.plots.multibody_physics import (
+# vivarium-cell imports
+from cell.library.pymunk_multibody import PymunkMultibody
+from cell.plots.multibody_physics import (
     check_plt_backend,
     plot_agent,
     plot_agents,

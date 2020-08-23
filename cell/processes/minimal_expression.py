@@ -5,12 +5,13 @@ import random
 
 from vivarium.core.process import Process
 from vivarium.library.dict_utils import tuplify_port_dicts
-from vivarium.library.regulation_logic import build_rule
 from vivarium.core.composition import (
     simulate_process_in_experiment,
     plot_simulation_output,
     PROCESS_OUT_DIR,
 )
+
+from cell.library.regulation_logic import build_rule
 
 
 NAME = 'minimal_expression'

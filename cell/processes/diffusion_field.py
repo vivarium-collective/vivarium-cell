@@ -20,14 +20,14 @@ from vivarium.core.composition import (
     simulate_process,
     PROCESS_OUT_DIR
 )
-from vivarium.library.lattice_utils import (
+from vivarium.library.units import units
+
+from cell.library.lattice_utils import (
     count_to_concentration,
     get_bin_site,
     get_bin_volume,
 )
-from vivarium.library.units import units
-
-from vivarium.plots.multibody_physics import plot_snapshots
+from cell.plots.multibody_physics import plot_snapshots
 
 NAME = 'diffusion_field'
 

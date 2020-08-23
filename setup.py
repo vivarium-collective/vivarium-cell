@@ -26,6 +26,8 @@ setup(
     include_package_data=True,
     install_requires=[
         'vivarium-core',
+        'cobra',
         'Arpeggio',
         'stochastic-arrow',
-        'pymunk'])
+        'pymunk',
+        'alphashape'])
