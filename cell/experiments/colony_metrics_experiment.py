@@ -12,7 +12,6 @@ import random
 import numpy as np
 import pytest
 
-from vivarium.compartments.lattice import Lattice
 from vivarium.core.composition import (
     EXPERIMENT_OUT_DIR,
     REFERENCE_DATA_DIR,
@@ -28,17 +27,19 @@ from vivarium.core.emitter import (
     timeseries_from_data,
 )
 from vivarium.core.experiment import Experiment
-from vivarium.experiments.lattice_experiment import (
+
+from cell.compartments.lattice import Lattice
+from cell.experiments.lattice_experiment import (
     agents_library,
     get_lattice_config,
 )
-from vivarium.plots.multibody_physics import plot_snapshots
-from vivarium.plots.colonies import plot_colony_metrics
+from cell.plots.multibody_physics import plot_snapshots
+from cell.plots.colonies import plot_colony_metrics
 from vivarium.library.timeseries import (
     process_path_timeseries_for_csv,
     save_flat_timeseries,
 )
-from vivarium.processes.multibody_physics import single_agent_config
+from cell.processes.multibody_physics import single_agent_config
 
 
 NAME = 'colony_metrics'

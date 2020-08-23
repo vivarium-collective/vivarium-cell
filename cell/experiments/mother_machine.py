@@ -16,16 +16,16 @@ from vivarium.core.composition import (
 )
 
 # compartments
-from vivarium.compartments.lattice import Lattice
-from vivarium.compartments.growth_division_minimal import GrowthDivisionMinimal
+from cell.compartments.lattice import Lattice
+from cell.compartments.growth_division_minimal import GrowthDivisionMinimal
 
 # processes
 from vivarium.library.units import units
 from vivarium.processes.derive_globals import volume_from_length
-from vivarium.processes.multibody_physics import (
+from cell.processes.multibody_physics import (
     volume_from_length, DEFAULT_BOUNDS, PI
 )
-from vivarium.plots.multibody_physics import plot_snapshots
+from cell.plots.multibody_physics import plot_snapshots
 
 
 def mother_machine_experiment(config):

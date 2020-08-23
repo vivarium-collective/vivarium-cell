@@ -26,7 +26,7 @@ from vivarium.core.composition import (
     load_timeseries,
     assert_timeseries_close,
 )
-from vivarium.plots.multibody_physics import (
+from cell.plots.multibody_physics import (
     plot_snapshots,
     plot_tags
 )

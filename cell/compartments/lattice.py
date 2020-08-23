@@ -11,12 +11,12 @@ from vivarium.core.composition import (
 from vivarium.library.dict_utils import deep_merge
 
 # processes
-from vivarium.processes.multibody_physics import (
+from cell.processes.multibody_physics import (
     Multibody,
     agent_body_config,
 )
-from vivarium.plots.multibody_physics import plot_snapshots
-from vivarium.processes.diffusion_field import (
+from cell.plots.multibody_physics import plot_snapshots
+from cell.processes.diffusion_field import (
     DiffusionField,
     get_gaussian_config,
 )

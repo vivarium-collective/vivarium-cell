@@ -7,7 +7,7 @@ This is a toy example referred to by the documentation.
 """
 
 from vivarium.core.experiment import Experiment
-from vivarium.compartments.injected_glc_phosphorylation import (
+from cell.compartments.injected_glc_phosphorylation import (
     InjectedGlcPhosphorylation,
 )
 
