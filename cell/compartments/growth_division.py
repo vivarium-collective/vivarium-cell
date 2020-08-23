@@ -13,22 +13,21 @@ from vivarium.core.composition import (
 )
 
 # processes
-from vivarium.processes.growth_protein import GrowthProtein
-from vivarium.processes.minimal_expression import (
+from vivarium.processes.meta_division import MetaDivision
+from vivarium.processes.tree_mass import TreeMass
+from cell.processes.growth_protein import GrowthProtein
+from cell.processes.minimal_expression import (
     MinimalExpression,
     get_toy_expression_config,
 )
-from vivarium.processes.meta_division import MetaDivision
-from vivarium.processes.convenience_kinetics import (
+from cell.processes.convenience_kinetics import (
     ConvenienceKinetics,
     get_glc_lct_config
 )
-from vivarium.processes.tree_mass import TreeMass
-
-from vivarium.library.dict_utils import deep_merge
 
 
 NAME = 'growth_division'
+
 
 class GrowthDivision(Generator):
 

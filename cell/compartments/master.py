@@ -8,21 +8,21 @@ from vivarium.core.composition import (
     plot_simulation_output,
     COMPARTMENT_OUT_DIR
 )
-from vivarium.library.dict_utils import deep_merge
-from vivarium.compartments.gene_expression import plot_gene_expression_output
 
-# processes
-from vivarium.processes.division_volume import DivisionVolume
-from vivarium.processes.metabolism import Metabolism, get_iAF1260b_config
-from vivarium.processes.convenience_kinetics import ConvenienceKinetics, get_glc_lct_config
-from vivarium.processes.transcription import Transcription
-from vivarium.processes.translation import Translation
-from vivarium.processes.degradation import RnaDegradation
-from vivarium.processes.complexation import Complexation
-from vivarium.states.chromosome import toy_chromosome_config
+# processes/compartments
+from cell.compartments.gene_expression import plot_gene_expression_output
+from cell.processes.division_volume import DivisionVolume
+from cell.processes.metabolism import Metabolism, get_iAF1260b_config
+from cell.processes.convenience_kinetics import ConvenienceKinetics, get_glc_lct_config
+from cell.processes.transcription import Transcription
+from cell.processes.translation import Translation
+from cell.processes.degradation import RnaDegradation
+from cell.processes.complexation import Complexation
+from cell.states.chromosome import toy_chromosome_config
 
 
 NAME = 'master'
+
 
 def default_metabolism_config():
     metabolism_config = get_iAF1260b_config()

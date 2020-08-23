@@ -15,19 +15,18 @@ from vivarium.core.composition import (
 )
 from vivarium.library.make_network import save_network
 from vivarium.library.units import units
-from vivarium.library.dict_utils import deep_merge
 
 # processes
-from vivarium.data.amino_acids import amino_acids
 from vivarium.processes.tree_mass import TreeMass
-from vivarium.processes.transcription import Transcription, UNBOUND_RNAP_KEY
-from vivarium.processes.translation import Translation, UNBOUND_RIBOSOME_KEY
-from vivarium.processes.degradation import RnaDegradation
-from vivarium.processes.complexation import Complexation
-from vivarium.processes.division_volume import DivisionVolume
-from vivarium.data.amino_acids import amino_acids
-from vivarium.data.nucleotides import nucleotides
-from vivarium.states.chromosome import toy_chromosome_config
+from cell.data.amino_acids import amino_acids
+from cell.processes.transcription import Transcription, UNBOUND_RNAP_KEY
+from cell.processes.translation import Translation, UNBOUND_RIBOSOME_KEY
+from cell.processes.degradation import RnaDegradation
+from cell.processes.complexation import Complexation
+from cell.processes.division_volume import DivisionVolume
+from cell.data.amino_acids import amino_acids
+from cell.data.nucleotides import nucleotides
+from cell.states.chromosome import toy_chromosome_config
 
 
 NAME = 'gene_expression'

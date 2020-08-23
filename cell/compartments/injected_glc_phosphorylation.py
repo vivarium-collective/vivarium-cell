@@ -9,10 +9,10 @@ This is a toy example referenced in the documentation.
 from vivarium.processes.glucose_phosphorylation import (
     GlucosePhosphorylation,
 )
-from vivarium.processes.injector import Injector
 from vivarium.core.experiment import Experiment
 from vivarium.core.process import Generator
 from vivarium.library.pretty import format_dict
+from cell.processes.injector import Injector
 
 
 class InjectedGlcPhosphorylation(Generator):

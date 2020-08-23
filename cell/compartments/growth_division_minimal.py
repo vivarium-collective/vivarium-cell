@@ -11,13 +11,14 @@ from vivarium.core.composition import (
 )
 
 # processes
-from vivarium.processes.growth_protein import GrowthProtein
 from vivarium.processes.meta_division import MetaDivision
+from cell.processes.growth_protein import GrowthProtein
 
-from vivarium.library.dict_utils import deep_merge
 
 
 NAME = 'growth_division_minimal'
+
+
 
 class GrowthDivisionMinimal(Generator):
 
