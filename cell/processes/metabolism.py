@@ -38,8 +38,8 @@ from vivarium.library.make_network import (
 )
 from vivarium.library.units import units
 from vivarium.library.dict_utils import tuplify_port_dicts
-from vivarium.processes.derive_globals import AVOGADRO
 
+from cell.processes.derive_globals import AVOGADRO
 from cell.library.cobra_fba import CobraFBA
 from cell.library.regulation_logic import build_rule
 from cell.data.synonyms import get_synonym

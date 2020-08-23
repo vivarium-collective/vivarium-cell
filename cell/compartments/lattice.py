@@ -15,12 +15,14 @@ from cell.processes.multibody_physics import (
     Multibody,
     agent_body_config,
 )
-from cell.plots.multibody_physics import plot_snapshots
 from cell.processes.diffusion_field import (
     DiffusionField,
     get_gaussian_config,
 )
-from vivarium.processes.derive_colony_shape import ColonyShapeDeriver
+from cell.processes.derive_colony_shape import ColonyShapeDeriver
+
+# plots
+from cell.plots.multibody_physics import plot_snapshots
 
 
 NAME = 'lattice'

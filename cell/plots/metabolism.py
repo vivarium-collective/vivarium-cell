@@ -5,7 +5,7 @@ import os
 import matplotlib.pyplot as plt
 
 from vivarium.library.units import units
-from vivarium.processes.derive_globals import AVOGADRO
+from cell.processes.derive_globals import AVOGADRO
 
 
 def plot_exchanges(timeseries, sim_config, out_dir='out', filename='exchanges'):

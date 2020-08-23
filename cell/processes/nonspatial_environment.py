@@ -8,7 +8,7 @@ from vivarium.library.units import units
 from vivarium.library.dict_utils import deep_merge
 from vivarium.core.process import Deriver
 
-from vivarium.processes.derive_globals import AVOGADRO
+from cell.processes.derive_globals import AVOGADRO
 
 
 class NonSpatialEnvironment(Deriver):

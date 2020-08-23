@@ -11,10 +11,11 @@ from vivarium.core.composition import (
     plot_simulation_output,
     PROCESS_OUT_DIR,
 )
-from vivarium.processes.derive_globals import AVOGADRO
+from cell.processes.derive_globals import AVOGADRO
 
 
 NAME = 'growth_protein'
+
 
 class GrowthProtein(Process):
 

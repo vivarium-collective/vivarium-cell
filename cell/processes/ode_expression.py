@@ -21,7 +21,7 @@ from vivarium.core.composition import (
 )
 from vivarium.library.units import units
 from cell.library.regulation_logic import build_rule
-from vivarium.processes.derive_globals import AVOGADRO
+from cell.processes.derive_globals import AVOGADRO
 
 
 NAME = 'ode_expression'

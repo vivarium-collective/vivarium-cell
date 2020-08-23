@@ -22,7 +22,7 @@ from vivarium.core.composition import (
     PROCESS_OUT_DIR,
     assert_timeseries_close,
 )
-from vivarium.processes.convenience_kinetics import ConvenienceKinetics
+from cell.processes.convenience_kinetics import ConvenienceKinetics
 
 
 class AntibioticTransport(ConvenienceKinetics):

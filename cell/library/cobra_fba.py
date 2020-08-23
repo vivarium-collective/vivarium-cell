@@ -6,7 +6,7 @@ from cobra.medium import minimal_medium
 
 from cobra import Model, Reaction, Metabolite, Configuration
 from vivarium.library.units import units
-from vivarium.processes.derive_globals import AVOGADRO
+from cell.processes.derive_globals import AVOGADRO
 from cell.data.synonyms import get_synonym
 
 

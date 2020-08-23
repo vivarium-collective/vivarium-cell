@@ -28,10 +28,9 @@ from vivarium.core.composition import (
     simulate_experiment,
     PROCESS_OUT_DIR,
 )
-from vivarium.processes.coarse_motor import run, tumble
-from vivarium.processes.derive_globals import volume_from_length
 
 # vivarium-cell imports
+from cell.processes.derive_globals import volume_from_length
 from cell.library.pymunk_multibody import PymunkMultibody
 from cell.plots.multibody_physics import (
     check_plt_backend,
@@ -452,6 +451,18 @@ class InvokeUpdate(object):
         self.update = update
     def get(self, timeout=0):
         return self.update
+
+def tumble(tumble_jitter=120.0):
+    thrust = 100  # pN
+    torque = random.normalvariate(0, tumble_jitter)
+    return [thrust, torque]
+
+def run():
+    # average thrust = 200 pN according to:
+    # Berg, Howard C. E. coli in Motion. Under "Torque-Speed Dependence"
+    thrust = 250  # pN
+    torque = 0.0
+    return [thrust, torque]
 
 def simulate_motility(config, settings):
     # time of motor behavior without chemotaxis
