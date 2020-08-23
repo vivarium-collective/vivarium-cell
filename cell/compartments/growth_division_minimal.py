@@ -58,7 +58,7 @@ class GrowthDivisionMinimal(Generator):
                 'global': boundary_path},
             'division': {
                 'global': boundary_path,
-                'cells': agents_path},
+                'agents': agents_path},
             }
 
 

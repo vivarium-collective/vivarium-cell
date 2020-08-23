@@ -32,20 +32,15 @@ from cell.plots.multibody_physics import (
 )
 
 # processes
-from vivarium.processes.metabolism import (
+from cell.processes.metabolism import (
     Metabolism,
     get_iAF1260b_config,
 )
 
 # compartments
-from vivarium.compartments.lattice import Lattice
-from vivarium.compartments.growth_division import GrowthDivision
-from vivarium.compartments.growth_division_minimal import GrowthDivisionMinimal
-from vivarium.compartments.transport_metabolism import TransportMetabolism
-from vivarium.compartments.flagella_expression import (
-    FlagellaExpressionMetabolism,
-    get_flagella_metabolism_initial_state,
-)
+from cell.compartments.lattice import Lattice
+from cell.compartments.growth_division import GrowthDivision
+from cell.compartments.growth_division_minimal import GrowthDivisionMinimal
 
 
 
@@ -75,26 +70,6 @@ agents_library = {
             'dimensions_path': ('..', '..', 'dimensions'),
             'growth_rate': 0.001,
             'division_volume': 2.6
-        }
-    },
-    'flagella_metabolism': {
-        'name': 'flagella_metabolism',
-        'type': FlagellaExpressionMetabolism,
-        'config': {
-            'agents_path': ('..', '..', 'agents'),
-            'fields_path': ('..', '..', 'fields'),
-            'dimensions_path': ('..', '..', 'dimensions'),
-        }
-    },
-    'transport_metabolism': {
-        'name': 'transport_metabolism',
-        'type': TransportMetabolism,
-        'config': {
-            'agents_path': ('..', '..', 'agents'),
-            'fields_path': ('..', '..', 'fields'),
-            'dimensions_path': ('..', '..', 'dimensions'),
-            'metabolism': {'time_step': 10},
-            'transport': {'time_step': 10},
         }
     },
 }
@@ -426,44 +401,6 @@ def test_growth_division_experiment():
     initial_agents = len(data[time[0]]['agents'])
     final_agents = len(data[time[-1]]['agents'])
     assert final_agents > initial_agents
-
-
-@pytest.mark.slow
-def test_transport_metabolism_experiment(seed=1):
-    random.seed(seed)
-    np.random.seed(seed)
-    experiment_name = 'transport_metabolism_experiment'
-    agent_config = agents_library['transport_metabolism']
-    agents_config = [agent_config]
-    environment_config = environments_library['shallow_iAF1260b']
-    experiment_settings = get_experiment_settings(total_time=60)
-
-    # simulate
-    data = run_lattice_experiment(
-        agents_config=agents_config,
-        environment_config=environment_config,
-        # initial_state=initial_state,
-        # initial_agent_state=initial_agent_state,
-        experiment_settings=experiment_settings,
-    )
-    path_ts = path_timeseries_from_data(data)
-    del path_ts[('agents', 'transport_metabolism', 'boundary', 'divide')]  # these contain 'False'
-
-    # save timeseries as csv
-    processed_for_csv = process_path_timeseries_for_csv(path_ts)
-    make_dir(OUT_DIR)
-    save_flat_timeseries(
-        processed_for_csv,
-        OUT_DIR,
-        experiment_name + '.csv')
-
-    # compare timeseries to reference
-    test_output = load_timeseries(os.path.join(OUT_DIR, experiment_name + '.csv'))
-    expected = load_timeseries(os.path.join(REFERENCE_DATA_DIR, experiment_name + '.csv'))
-    assert_timeseries_close(
-        test_output, expected,
-        default_tolerance=(1 - 1e-5),
-    )
 
 
 def make_dir(out_dir):

@@ -21,7 +21,7 @@ from cell.compartments.growth_division_minimal import GrowthDivisionMinimal
 
 # processes
 from vivarium.library.units import units
-from vivarium.processes.derive_globals import volume_from_length
+from cell.processes.derive_globals import volume_from_length
 from cell.processes.multibody_physics import (
     volume_from_length, DEFAULT_BOUNDS, PI
 )

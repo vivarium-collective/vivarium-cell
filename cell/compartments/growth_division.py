@@ -108,7 +108,7 @@ class GrowthDivision(Generator):
 
             'division': {
                 'global': boundary_path,
-                'cells': agents_path
+                'agents': agents_path
             },
 
             'expression': {

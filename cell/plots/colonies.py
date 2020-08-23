@@ -13,7 +13,7 @@ import numpy as np
 from scipy import stats
 
 from vivarium.library.units import remove_units
-from vivarium.processes.derive_colony_shape import Variables
+from cell.processes.derive_colony_shape import Variables
 
 
 INCH_PER_COL = 4
