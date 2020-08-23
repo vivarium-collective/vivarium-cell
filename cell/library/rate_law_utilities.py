@@ -24,11 +24,11 @@ import argparse
 # import matplotlib.pyplot as plt  # RuntimeError: Python is not installed as a framework.
 import matplotlib.pyplot as plt
 
-from vivarium.data.spreadsheets import load_tsv
 from vivarium.library import filepath
 
-from vivarium.library.look_up import LookUp
-import vivarium.library.kinetic_rate_laws as rate_laws
+from cell.data.spreadsheets import load_tsv
+from cell.library.look_up import LookUp
+import cell.library.kinetic_rate_laws as rate_laws
 
 REACTIONS_FILE = os.path.join("vivarium", "data", "flat", "wcEcoli_reactions.tsv")
 PROTEINS_FILE = os.path.join("vivarium", "data", "flat", "wcEcoli_proteins.tsv")

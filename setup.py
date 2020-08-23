@@ -28,6 +28,7 @@ setup(
         'vivarium-core',
         'cobra',
         'Arpeggio',
+        'parsimonious',
         'stochastic-arrow',
         'pymunk',
         'alphashape'])

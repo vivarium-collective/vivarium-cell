@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import os
 import csv
 import random
-from vivarium.data.spreadsheets import load_tsv
+from cell.data.spreadsheets import load_tsv
 
 FLAT_DIR = os.path.join('vivarium', 'data', 'flat')
 MEDIA_IDS = ['minimal', 'minimal_minus_oxygen', 'minimal_plus_amino_acids']

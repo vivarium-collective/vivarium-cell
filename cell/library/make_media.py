@@ -11,7 +11,7 @@ from parsimonious.nodes import NodeVisitor
 from vivarium.library.units import units
 
 # Raw data class
-from vivarium.data.knowledge_base import KnowledgeBase
+from cell.data.knowledge_base import KnowledgeBase
 
 INF = float("inf")
 NEG_INF = float("-inf")
