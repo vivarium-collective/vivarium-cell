@@ -351,5 +351,4 @@ def plot_death_freeze_state_test():
 
 
 if __name__ == '__main__':
-    test_death_freeze_state()
     plot_death_freeze_state_test()
