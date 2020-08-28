@@ -14,7 +14,6 @@ import pytest
 
 from vivarium.core.composition import (
     EXPERIMENT_OUT_DIR,
-    REFERENCE_DATA_DIR,
     make_agents,
     assert_timeseries_close,
     load_timeseries,
@@ -40,7 +39,7 @@ from vivarium.library.timeseries import (
     save_flat_timeseries,
 )
 from cell.processes.multibody_physics import single_agent_config
-
+from cell.data import REFERENCE_DATA_DIR
 
 NAME = 'colony_metrics'
 OUT_DIR = os.path.join(EXPERIMENT_OUT_DIR, NAME)

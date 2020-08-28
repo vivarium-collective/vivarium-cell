@@ -66,7 +66,7 @@ class Transcription(Process):
 
         * **chromosome**: The linked :term:`store` should hold a
           representation of the chromosome in the form returned by
-          :py:meth:`vivarium.states.chromosome.Chromosome.to_dict`.
+          :py:meth:`cell.states.chromosome.Chromosome.to_dict`.
         * **molecules**: Expects variables with the names in the
           *molecule_ids* configuration. These are the monomers consumed
           by transcription.
@@ -116,12 +116,12 @@ class Transcription(Process):
                   the symbols used to represent monomers in the RNA
                   sequence to the name of the free monomer. This should
                   generally be
-                  :py:data:`vivarium.data.nucleotides.nucleotides`.
+                  :py:data:`cell.data.nucleotides.nucleotides`.
                 * **monomer_ids** (:py:class:`list`): A list of the
                   names of the free monomers consumed by transcription.
                   This can generally be computed as:
 
-                  >>> from vivarium.data.nucleotides import nucleotides
+                  >>> from cell.data.nucleotides import nucleotides
                   >>> monomer_ids = nucleotides.values()
                   >>> print(list(monomer_ids))
                   ['ATP', 'GTP', 'UTP', 'CTP']
@@ -141,11 +141,11 @@ class Transcription(Process):
         >>>
         >>> import numpy as np
         >>>
-        >>> from vivarium.states.chromosome import (
+        >>> from cell.states.chromosome import (
         ...     toy_chromosome_config,
         ...     Chromosome,
         ... )
-        >>> from vivarium.data.nucleotides import nucleotides
+        >>> from cell.data.nucleotides import nucleotides
         >>> # format_dict lets us print dictionaries prettily
         >>> from vivarium.library.pretty import format_dict
         >>>
@@ -187,7 +187,7 @@ class Transcription(Process):
         ... }
         >>> update = transcription_process.next_update(1.0, state)
         >>> print(update['chromosome'])
-        {'rnaps': {'_add': [{'path': (2,), 'state': <class 'vivarium.states.chromosome.Rnap'>: {'id': 2, 'template': 'pA', 'template_index': 0, 'terminator': 1, 'domain': 0, 'state': 'polymerizing', 'position': 7}}, {'path': (3,), 'state': <class 'vivarium.states.chromosome.Rnap'>: {'id': 3, 'template': 'pB', 'template_index': 1, 'terminator': 0, 'domain': 0, 'state': 'occluding', 'position': 3}}, {'path': (4,), 'state': <class 'vivarium.states.chromosome.Rnap'>: {'id': 4, 'template': 'pA', 'template_index': 0, 'terminator': 0, 'domain': 0, 'state': 'occluding', 'position': 0}}], '_delete': []}, 'rnap_id': 4, 'domains': {0: <class 'vivarium.states.chromosome.Domain'>: {'id': 0, 'lead': 0, 'lag': 0, 'children': []}}, 'root_domain': 0}
+        {'rnaps': {'_add': [{'path': (2,), 'state': <class 'cell.states.chromosome.Rnap'>: {'id': 2, 'template': 'pA', 'template_index': 0, 'terminator': 1, 'domain': 0, 'state': 'polymerizing', 'position': 7}}, {'path': (3,), 'state': <class 'cell.states.chromosome.Rnap'>: {'id': 3, 'template': 'pB', 'template_index': 1, 'terminator': 0, 'domain': 0, 'state': 'occluding', 'position': 3}}, {'path': (4,), 'state': <class 'cell.states.chromosome.Rnap'>: {'id': 4, 'template': 'pA', 'template_index': 0, 'terminator': 0, 'domain': 0, 'state': 'occluding', 'position': 0}}], '_delete': []}, 'rnap_id': 4, 'domains': {0: <class 'cell.states.chromosome.Domain'>: {'id': 0, 'lead': 0, 'lag': 0, 'children': []}}, 'root_domain': 0}
         '''
 
         if not initial_parameters:

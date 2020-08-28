@@ -18,11 +18,12 @@ from vivarium.core.composition import (
     flatten_timeseries,
     save_timeseries,
     load_timeseries,
-    REFERENCE_DATA_DIR,
     PROCESS_OUT_DIR,
     assert_timeseries_close,
 )
+
 from cell.processes.convenience_kinetics import ConvenienceKinetics
+from cell.data import REFERENCE_DATA_DIR
 
 
 class AntibioticTransport(ConvenienceKinetics):
