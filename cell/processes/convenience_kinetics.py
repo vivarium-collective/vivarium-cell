@@ -39,7 +39,6 @@ from vivarium.core.composition import (
     flatten_timeseries,
     save_timeseries,
     load_timeseries,
-    REFERENCE_DATA_DIR,
     PROCESS_OUT_DIR,
     assert_timeseries_close,
 )
@@ -48,6 +47,8 @@ from vivarium.library.units import units, remove_units
 
 # vivarium-cell imports
 from cell.library.kinetic_rate_laws import KineticFluxModel
+from cell.data import REFERENCE_DATA_DIR
+
 import cell.processes
 
 
