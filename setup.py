@@ -6,6 +6,8 @@ from distutils.core import setup
 with open("README.md", 'r') as readme:
     long_description = readme.read()
 
+# to include data in the package, use MANIFEST.in
+
 setup(
     name='vivarium-cell',
     version='0.0.1',
@@ -33,13 +35,6 @@ setup(
         'console_scripts': []},
     long_description=long_description,
     long_description_content_type='text/markdown',
-    package_data={
-        'cell.bigg_models': ['*.json'],
-        'cell.data.flat': ['*.tsv', '*.fa'],
-        'cell.data.flat.media': ['*.tsv'],
-        'cell.data.json_files': ['*.json'],
-        'cell.reference_data': ['*.csv']},
-    include_package_data=True,
     install_requires=[
         'vivarium-core>=0.0.12',
         'cobra',
