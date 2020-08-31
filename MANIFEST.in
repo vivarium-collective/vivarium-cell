@@ -1,0 +1,8 @@
+include requirements.txt
+include README.md
+include cell/bigg_models/*.json
+include cell/data/flat/*.fa
+include cell/data/flat/*.tsv
+include cell/data/flat/media/*.tsv
+include cell/data/json_files/*.json
+include cell/reference_data/*.csv
