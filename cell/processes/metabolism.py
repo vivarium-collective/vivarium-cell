@@ -375,6 +375,9 @@ class Metabolism(Process):
 
 
 # configs
+def get_package_path():
+    return os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+
 def get_e_coli_core_config():
     """Get an *E. coli* core metabolism model
 
@@ -385,7 +388,8 @@ def get_e_coli_core_config():
         A configuration for the model that can be passed to the
         :py:class:`Metabolism` constructor.
     """
-    metabolism_file = os.path.join('cell', 'bigg_models', 'e_coli_core.json')
+    package_path = get_package_path()
+    metabolism_file = os.path.join(package_path, 'bigg_models', 'e_coli_core.json')
     return {'model_path': metabolism_file}
 
 def get_iAF1260b_config():
@@ -398,7 +402,8 @@ def get_iAF1260b_config():
         A configuration for the model that can be passed to the
         :py:class:`Metabolism` constructor.
     """
-    metabolism_file = os.path.join('cell', 'bigg_models', 'iAF1260b.json')
+    package_path = get_package_path()
+    metabolism_file = os.path.join(package_path, 'bigg_models', 'iAF1260b.json')
     return {'model_path': metabolism_file}
 
 def get_toy_configuration():
