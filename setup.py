@@ -10,7 +10,7 @@ with open("README.md", 'r') as readme:
 
 setup(
     name='vivarium-cell',
-    version='0.0.3',
+    version='0.0.9',
     packages=[
         'cell',
         'cell.bigg_models',
@@ -22,6 +22,7 @@ setup(
         'cell.data.json_files',
         'cell.experiments',
         'cell.library',
+        'cell.parameters',
         'cell.plots',
         'cell.processes',
         'cell.reference_data',
@@ -35,8 +36,9 @@ setup(
         'console_scripts': []},
     long_description=long_description,
     long_description_content_type='text/markdown',
+    include_package_data=True,
     install_requires=[
-        'vivarium-core>=0.0.12',
+        'vivarium-core>=0.0.13',
         'cobra',
         'Arpeggio',
         'parsimonious',
