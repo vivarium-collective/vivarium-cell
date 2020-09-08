@@ -10,7 +10,7 @@ with open("README.md", 'r') as readme:
 
 setup(
     name='vivarium-cell',
-    version='0.0.11',
+    version='0.0.12',
     packages=[
         'cell',
         'cell.bigg_models',

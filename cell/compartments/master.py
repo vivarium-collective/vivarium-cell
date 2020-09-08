@@ -10,7 +10,7 @@ from vivarium.core.composition import (
 )
 
 # processes/compartments
-from cell.compartments.gene_expression import plot_gene_expression_output
+from cell.plots.gene_expression import plot_gene_expression_output
 from cell.processes.division_volume import DivisionVolume
 from cell.processes.metabolism import Metabolism, get_iAF1260b_config
 from cell.processes.convenience_kinetics import ConvenienceKinetics, get_glc_lct_config
