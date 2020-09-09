@@ -96,7 +96,7 @@ def get_lattice_config(
             'agents': {}
         },
         'diffusion': {
-            # 'time_step': time_step,
+            'time_step': time_step,
             'molecules': molecules,
             'n_bins': n_bins,
             'bounds': bounds,
