@@ -150,9 +150,9 @@ class MembranePotential(Process):
 
         # Goldman equation for membrane potential
         # expected d_V = -120 mV
-        d_V = (R * T) / (F) * np.log(numerator / denominator) * 1e3  # (mV). 1e3 factor converts from V
+        d_V = (R * T) / F * np.log(numerator / denominator) * 1e3  # (mV). 1e3 factor converts from V
 
-        # Nernst equation for pH difference
+        # transmembrane pH difference
         # -2.3 * k * T / e  # -2.3 Boltzmann constant * temperature
         # expected d_pH = -50 mV
         d_pH = -50  # (mV) for cells grown at pH 7. (Berg, H. "E. coli in motion", pg 105)
