@@ -340,10 +340,7 @@ def plot_snapshots(data, plot_config):
                 if agents:
                     agents_now = agents[time]
                     plot_agents(
-                        ax, agents_now,agent_colors, agent_shape,
-                        dead_color,
-                    )
-
+                        ax, agents_now, agent_colors, agent_shape, dead_color)
 
                 # colorbar in new column after final snapshot
                 if col_idx == n_snapshots - 1:
@@ -364,9 +361,10 @@ def plot_snapshots(data, plot_config):
                 fig, bounds[0], bounds[1], grid, row_idx, col_idx,
                 time, ""
             )
+
             if agents:
                 agents_now = agents[time]
-                plot_agents(ax, agents_now, agent_colors, agent_shape)
+                plot_agents(ax, agents_now, agent_colors, agent_shape, dead_color)
 
     fig_path = os.path.join(out_dir, filename)
     fig.subplots_adjust(wspace=0.7, hspace=0.1)
