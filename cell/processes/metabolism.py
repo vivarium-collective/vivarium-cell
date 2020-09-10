@@ -62,6 +62,13 @@ def get_fg_from_counts(counts_dict, mw):
     return composition_mass.to('fg')
 
 
+def get_minimal_media_BiGG():
+    config = get_iAF1260b_config()
+    metabolism = Metabolism(config)
+    external_concentrations = metabolism.initial_state['external']
+    return external_concentrations
+
+
 
 class Metabolism(Process):
     """A general class that is configured to match specific models
