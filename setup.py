@@ -14,7 +14,7 @@ setup(
     packages=[
         'cell',
         'cell.bigg_models',
-        'cell.compartments',
+        'cell.composites',
         'cell.data',
         'cell.data.chromosomes',
         'cell.data.flat',

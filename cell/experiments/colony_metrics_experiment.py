@@ -27,7 +27,7 @@ from vivarium.core.emitter import (
 )
 from vivarium.core.experiment import Experiment
 
-from cell.compartments.lattice import Lattice
+from cell.composites.lattice import Lattice
 from cell.experiments.lattice_experiment import (
     agents_library,
     get_lattice_config,
@@ -61,7 +61,7 @@ def colony_metrics_experiment(config):
               :py:class:`vivarium.core.experiment.Experiment`
               constructor. Defaults to a timeseries emitter.
             * **environment** (:py:class:`dict`): Configuration to pass
-              to the :py:class:`vivarium.compartments.lattice.Lattice`
+              to the :py:class:`vivarium.composites.lattice.Lattice`
               constructor. Defaults to ``{}``.
             * **agent** (:py:class:`dict`): Dictionary with the
               following keys-value pairs:

@@ -9,7 +9,7 @@ from vivarium.core.composition import (
     COMPARTMENT_OUT_DIR
 )
 
-# processes/compartments
+# processes/composites
 from cell.plots.gene_expression import plot_gene_expression_output
 from cell.processes.division_volume import DivisionVolume
 from cell.processes.metabolism import Metabolism, get_iAF1260b_config

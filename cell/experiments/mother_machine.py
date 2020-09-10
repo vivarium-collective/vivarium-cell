@@ -15,9 +15,9 @@ from vivarium.core.composition import (
     plot_agents_multigen
 )
 
-# compartments
-from cell.compartments.lattice import Lattice
-from cell.compartments.growth_division_minimal import GrowthDivisionMinimal
+# composites
+from cell.composites.lattice import Lattice
+from cell.composites.growth_division_minimal import GrowthDivisionMinimal
 
 # processes
 from vivarium.library.units import units

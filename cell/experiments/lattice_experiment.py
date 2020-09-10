@@ -37,10 +37,10 @@ from cell.processes.metabolism import (
     get_iAF1260b_config,
 )
 
-# compartments
-from cell.compartments.lattice import Lattice
-from cell.compartments.growth_division import GrowthDivision
-from cell.compartments.growth_division_minimal import GrowthDivisionMinimal
+# composites
+from cell.composites.lattice import Lattice
+from cell.composites.growth_division import GrowthDivision
+from cell.composites.growth_division_minimal import GrowthDivisionMinimal
 
 
 
