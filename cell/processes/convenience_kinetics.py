@@ -482,28 +482,27 @@ def get_glc_lct_config():
             'catalyzed by': [('internal', 'LacY')]
         }
     }
-
     transport_kinetics = {
         'EX_glc__D_e': {
             ('internal', 'EIIglc'): {
                 ('external', 'glc__D_e'): 1e0,  # k_m for external [glc__D_e]
-                ('internal', 'pep_c'): None,  # Set k_m = None to make a reactant non-limiting
-                'kcat_f': 6e1,  # kcat for the forward direction
+                ('internal', 'pep_c'): None,  # k_m = None makes a reactant non-limiting
+                'kcat_f': 1e2,
             }
         },
         'EX_lcts_e': {
             ('internal', 'LacY'): {
                 ('external', 'lcts_e'): 1e0,
-                'kcat_f': 6e1,
+                'kcat_f': 1e2,
             }
         }
     }
 
     transport_initial_state = {
         'internal': {
-            'EIIglc': 1.8e-3,  # (mmol/L)
+            'EIIglc': 1.0e-3,  # (mmol/L)
             'g6p_c': 0.0,
-            'pep_c': 1.8e-1,
+            'pep_c': 1.0e-1,
             'pyr_c': 0.0,
             'LacY': 0,
             'lcts_p': 0.0,
