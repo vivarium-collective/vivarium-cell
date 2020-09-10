@@ -414,8 +414,6 @@ def main():
     parser = argparse.ArgumentParser(description='lattice_experiment')
     parser.add_argument('--growth_division', '-g', action='store_true', default=False)
     parser.add_argument('--growth_division_minimal', '-m', action='store_true', default=False)
-    parser.add_argument('--flagella_metabolism', '-f', action='store_true', default=False)
-    parser.add_argument('--transport_metabolism', '-t', action='store_true', default=False)
     args = parser.parse_args()
     no_args = (len(sys.argv) == 1)
 
@@ -483,37 +481,6 @@ def main():
             ),
             out_dir=txp_mtb_out_dir)
 
-    elif args.transport_metabolism:
-        txp_mtb_out_dir = os.path.join(out_dir, 'transport_metabolism')
-        make_dir(txp_mtb_out_dir)
-        run_workflow(
-            agent_type='transport_metabolism',
-            n_agents=2,
-            environment_type='shallow_iAF1260b',
-            initial_agent_state={
-                'boundary': {
-                    'external': {
-                        'glc__D_e': 1.0,
-                        'lcts_e': 1.0}}},
-            out_dir=txp_mtb_out_dir,
-            experiment_settings=get_experiment_settings(
-                experiment_name='glucose lactose diauxie',
-                description='glucose-lactose diauxic shifters are placed in a shallow environment with glucose and '
-                           'lactose. They start off with no internal LacY and uptake only glucose, but LacY is '
-                           'expressed upon depletion of glucose they begin to uptake lactose. Cells have an iAF1260b '
-                           'BiGG metabolism, kinetic transport of glucose and lactose, and ode-based gene expression '
-                           'of LacY',
-                total_time=6000,
-                emit_step=200,
-                emitter='database',
-            ),
-            plot_settings=get_plot_settings(
-                fields=['glc__D_e', 'lcts_e'],
-                tags=[
-                    ('cytoplasm', 'LacY'),
-                ],
-            ),
-        ),
 
 
 if __name__ == '__main__':
