@@ -27,7 +27,6 @@ from vivarium.core.composition import (
     flatten_timeseries,
     load_timeseries,
     assert_timeseries_close,
-    REFERENCE_DATA_DIR,
     PROCESS_OUT_DIR,
     plot_simulation_output
 )
@@ -43,12 +42,17 @@ from cell.processes.derive_globals import AVOGADRO
 from cell.library.cobra_fba import CobraFBA
 from cell.library.regulation_logic import build_rule
 from cell.data.synonyms import get_synonym
-from cell.plots.metabolism import plot_exchanges, BiGG_energy_carriers, energy_synthesis_plot
+from cell.data import REFERENCE_DATA_DIR
 
+# plots
+from cell.plots.metabolism import (
+    plot_exchanges,
+    BiGG_energy_carriers,
+    energy_synthesis_plot
+)
 
 
 NAME = 'metabolism'
-
 
 
 def get_fg_from_counts(counts_dict, mw):
@@ -570,7 +574,7 @@ reference_sim_settings = {
     'timestep': 1,
     'total_time': 10}
 
-def metabolism_similar_to_reference():
+def test_metabolism_similar_to_reference():
     config = get_iAF1260b_config()
     metabolism = Metabolism(config)
     timeseries = run_metabolism(metabolism, reference_sim_settings)
@@ -593,11 +597,13 @@ if __name__ == '__main__':
         # configure BiGG metabolism
         config = get_iAF1260b_config()
         metabolism = Metabolism(config)
+        external_concentrations = metabolism.initial_state['external']
 
         # simulation settings
         sim_settings = {
             'environment': {
                 'volume': 1e-5 * units.L,
+                'concentrations': external_concentrations,
             },
             'total_time': 2520,  # 2520 sec (42 min) is the expected doubling time in minimal media
         }
