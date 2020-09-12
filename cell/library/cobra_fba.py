@@ -123,7 +123,7 @@ def extract_model(model):
             reactions.get_by_id(reaction_id)
             objective[reaction_id] = float(coeff)
         except:
-            pass
+            print('REACTION Exception {}'.format(reaction_id))
 
     # get flux scaling factor based on the objective's predicted added mass
     # this adjusts the BiGG FBA bounds to approximate single-cell rates
