@@ -111,7 +111,10 @@ def extract_model(model):
 
     # get molecular weights
     molecular_weights = {}
+    nonexisting_elements = ['R', 'X']
     for metabolite in metabolites:
+        if any([e in nonexisting_elements for e in metabolite.elements]):
+            continue
         molecular_weights[metabolite.id] = metabolite.formula_weight
 
     # get objective

@@ -8,14 +8,16 @@ from vivarium.library.units import units
 from cell.processes.derive_globals import AVOGADRO
 
 
-def plot_exchanges(timeseries, sim_config, out_dir='out', filename='exchanges'):
+def plot_exchanges(timeseries, plot_config, out_dir='out', filename='exchanges'):
     # plot exchanges with the environment
 
     nAvogadro = AVOGADRO
-    env_volume = sim_config['environment']['volume']
     external_ts = timeseries['external']
     internal_ts = timeseries['internal']
     global_ts = timeseries['global']
+
+    env_volume = plot_config['environment']['volume']
+    legend_on = plot_config.get('legend', True)
 
     # pull volume and mass out from internal
     volume = global_ts.pop('volume') * units.fL
@@ -37,7 +39,8 @@ def plot_exchanges(timeseries, sim_config, out_dir='out', filename='exchanges'):
     # plot external state
     for mol_id, series in external_ts.items():
         ax1.plot(series, label=mol_id)
-    ax1.legend(loc='center left', bbox_to_anchor=(1.0, 0.5), ncol=2)
+    if legend_on:
+        ax1.legend(loc='center left', bbox_to_anchor=(1.0, 0.5), ncol=2)
     ax1.title.set_text('environment: {} (L)'.format(env_volume))
     ax1.set_ylabel('concentrations (logs)')
     ax1.set_yscale('log')
@@ -48,17 +51,8 @@ def plot_exchanges(timeseries, sim_config, out_dir='out', filename='exchanges'):
         #    for count, conversion in zip(counts_series, mmol_to_counts)]
         ax2.plot(counts_series, label=mol_id)
 
-    # # plot internal concentrations
-    # for mol_id, counts_series in internal_ts.items():
-    #     conc_series = [(count / conversion).to('mmol/L').magnitude
-    #        for count, conversion in zip(counts_series, mmol_to_counts)]
-    #     ax2.plot(conc_series, label=mol_id)
-
-    # ax2.legend(loc='center left', bbox_to_anchor=(1.6, 0.5), ncol=3)
-    # ax2.title.set_text('internal metabolites')
-    # ax2.set_ylabel('conc (mM)')
-
-    ax2.legend(loc='center left', bbox_to_anchor=(1.6, 0.5), ncol=3)
+    if legend_on:
+        ax2.legend(loc='center left', bbox_to_anchor=(1.6, 0.5), ncol=3)
     ax2.title.set_text('internal metabolites')
     ax2.set_ylabel('delta counts (log)')
     ax2.set_yscale('log')
