@@ -111,7 +111,10 @@ def extract_model(model):
 
     # get molecular weights
     molecular_weights = {}
+    nonexisting_elements = ['R', 'X']
     for metabolite in metabolites:
+        if any([e in nonexisting_elements for e in metabolite.elements]):
+            continue
         molecular_weights[metabolite.id] = metabolite.formula_weight
 
     # get objective
@@ -123,7 +126,7 @@ def extract_model(model):
             reactions.get_by_id(reaction_id)
             objective[reaction_id] = float(coeff)
         except:
-            print('REACTION Exception {}'.format(reaction_id))
+            pass
 
     # get flux scaling factor based on the objective's predicted added mass
     # this adjusts the BiGG FBA bounds to approximate single-cell rates
