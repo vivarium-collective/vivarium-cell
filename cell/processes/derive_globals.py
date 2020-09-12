@@ -61,18 +61,7 @@ class DeriveGlobals(Deriver):
         'initial_mass': 1339 * units.fg,  # wet mass in fg
     }
 
-    def __init__(self, initial_parameters=None):
-        if initial_parameters is None:
-            initial_parameters = {}
-
-        self.width = self.or_default(
-            initial_parameters, 'width')
-        self.initial_mass = self.or_default(
-            initial_parameters, 'initial_mass')
-
-        parameters = {}
-        parameters.update(initial_parameters)
-
+    def __init__(self, parameters=None):
         super(DeriveGlobals, self).__init__(parameters)
 
     def ports_schema(self):
@@ -81,12 +70,13 @@ class DeriveGlobals(Deriver):
         emit = {'global': ['volume', 'width', 'length', 'surface_area']}
 
         # default state
-        mass = self.initial_mass
+        mass = self.parameters['initial_mass']
+        width = self.parameters['width']
         density = 1100 * units.g / units.L
         volume = mass/density
         mmol_to_counts = (AVOGADRO * volume).to('L/mmol')
-        length = length_from_volume(volume.magnitude, self.width)
-        surface_area = surface_area_from_length(length, self.width)
+        length = length_from_volume(volume.magnitude, width)
+        surface_area = surface_area_from_length(length, width)
 
         default_state = {
             'global': {
@@ -94,7 +84,7 @@ class DeriveGlobals(Deriver):
                 'volume': volume.to('fL'),
                 'mmol_to_counts': mmol_to_counts,
                 'density': density,
-                'width': self.width,
+                'width': width,
                 'length': length,
                 'surface_area': surface_area}}
 
@@ -131,6 +121,7 @@ class DeriveGlobals(Deriver):
                 'mmol_to_counts': mmol_to_counts,
                 'length': length,
                 'surface_area': surface_area}}
+
 
 def get_default_global_state():
     mass = 1339 * units.fg  # wet mass in fg

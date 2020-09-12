@@ -259,10 +259,11 @@ class Metabolism(Process):
             }
 
         # globals
-        schema['global']['mass'] = {
-            '_default': self.initial_mass,
-            '_emit': True}
         schema['global'] = {
+            'mass': {
+                '_default': self.initial_mass,
+                '_emit': True,
+            },
             'mmol_to_counts': {
                 '_default': 0.0 * units.L / units.mmol,
                 '_emit': True,
