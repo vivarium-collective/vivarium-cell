@@ -50,8 +50,7 @@ def make_lattice_config(
     if bounds:
         config['multibody']['bounds'] = bounds
         config['diffusion']['bounds'] = bounds
-        if not n_bins:
-            config['diffusion']['n_bins'] = tuple(bounds)
+        config['diffusion']['n_bins'] = bounds
     if n_bins:
         config['diffusion']['n_bins'] = n_bins
     if jitter_force:
@@ -64,6 +63,8 @@ def make_lattice_config(
         config['diffusion']['gradient'] = {
             'type': 'uniform',
             'molecules': concentrations}
+        molecules = list(concentrations.keys())
+        config['diffusion']['molecules'] = molecules
     elif molecules:
         # molecules are a list, assume uniform concentrations of 1
         config['diffusion']['molecules'] = molecules

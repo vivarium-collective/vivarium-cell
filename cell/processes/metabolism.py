@@ -62,11 +62,19 @@ def get_fg_from_counts(counts_dict, mw):
     return composition_mass.to('fg')
 
 
-def get_minimal_media_iAF1260b():
+def get_minimal_media_iAF1260b(
+        scale_concentration=1,
+        override_initial={},
+):
     config = get_iAF1260b_config()
     metabolism = Metabolism(config)
-    external_concentrations = metabolism.initial_state['external']
-    return external_concentrations
+    molecules = {
+        mol_id: conc * scale_concentration
+        for mol_id, conc in metabolism.initial_state['external'].items()
+    }
+    for mol_id, conc in override_initial.items():
+        molecules[mol_id] = conc
+    return molecules
 
 
 
