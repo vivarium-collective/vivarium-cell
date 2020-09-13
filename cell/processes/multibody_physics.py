@@ -321,7 +321,7 @@ def agent_body_config(config):
     agent_config = {
         agent_id: single_agent_config(config)
         for agent_id in agent_ids}
-    return {'agents': agent_config}
+    return agent_config
 
 def get_baseline_config(config={}):
     animate = config.get('animate', False)
@@ -340,7 +340,7 @@ def get_baseline_config(config={}):
         'bounds': bounds,
         'agent_ids': agent_ids,
         'location': initial_location}
-    motility_config.update(agent_body_config(body_config))
+    motility_config['agents'] = agent_body_config(body_config)
     return motility_config
 
 # tests and simulations
@@ -348,7 +348,8 @@ def test_multibody(config={'n_agents':1}, time=10):
     n_agents = config.get('n_agents',1)
     agent_ids = [str(agent_id) for agent_id in range(n_agents)]
 
-    body_config = agent_body_config({'agent_ids': agent_ids})
+    body_config = {
+        'agents': agent_body_config({'agent_ids': agent_ids})}
     multibody = Multibody(body_config)
 
     # initialize agent's boundary state
@@ -638,7 +639,7 @@ def run_growth_division(config={}):
     body_config = {
         'bounds': bounds,
         'agent_ids': agent_ids}
-    gd_config.update(agent_body_config(body_config))
+    gd_config['agents'] = agent_body_config(body_config)
     gd_data = simulate_growth_division(gd_config, settings)
 
     # snapshots plot

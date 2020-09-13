@@ -28,6 +28,70 @@ from cell.plots.multibody_physics import plot_snapshots
 NAME = 'lattice'
 
 
+# make a configuration dictionary for the Lattice compartment
+def make_lattice_config(
+        time_step=None,
+        jitter_force=None,
+        bounds=None,
+        n_bins=None,
+        n_agents=None,
+        depth=None,
+        concentrations=None,
+        molecules=None,
+        diffusion=None,
+        keep_fields_emit=None,
+        set_config=None,
+        parallel=None,
+):
+    config = {'multibody': {}, 'diffusion': {}}
+
+    if time_step:
+        config['multibody']['time_step'] = time_step
+        config['diffusion']['time_step'] = time_step
+    if bounds:
+        config['multibody']['bounds'] = bounds
+        config['diffusion']['bounds'] = bounds
+        if not n_bins:
+            config['diffusion']['n_bins'] = tuple(bounds)
+    if n_bins:
+        config['diffusion']['n_bins'] = n_bins
+    if jitter_force:
+        config['multibody']['jitter_force'] = jitter_force
+    if depth:
+        config['diffusion']['depth'] = depth
+    if diffusion:
+        config['diffusion']['diffusion'] = diffusion
+    if concentrations:
+        config['diffusion']['gradient'] = {
+            'type': 'uniform',
+            'molecules': concentrations}
+    elif molecules:
+        # molecules are a list, assume uniform concentrations of 1
+        config['diffusion']['molecules'] = molecules
+    if keep_fields_emit:
+        # by default no fields are emitted
+        config['diffusion']['_schema'] = {
+            'fields': {
+                field_id: {
+                    '_emit': False}
+                for field_id in molecules
+                if field_id not in keep_fields_emit}}
+    if n_agents:
+        # TODO -- this is setting the agent_ids, might want to pass it in
+        agent_ids = [str(agent_id) for agent_id in range(n_agents)]
+        body_config = {'agent_ids': agent_ids}
+        if bounds:
+            body_config.update({'bounds': bounds})
+        config['multibody']['agents'] = agent_body_config(body_config)
+    if parallel:
+        config['multibody']['_parallel'] = True
+    if set_config:
+        config = deep_merge(config, set_config)
+
+    return config
+
+
+
 class Lattice(Generator):
     """
     Lattice:  A two-dimensional lattice environmental model with multibody physics and diffusing molecular fields.
@@ -88,47 +152,9 @@ class Lattice(Generator):
         }
 
 
-def get_lattice_config(config=None):
-    if config is None:
-        config = {}
-    bounds = config.get('bounds', [25, 25])
-    molecules = config.get('molecules', ['glc'])
-    n_bins = config.get('n_bins', tuple(bounds))
-    center = config.get('center', [0.5, 0.5])
-    deviation = config.get('deviation', 5)
-    diffusion = config.get('diffusion', 1e0)
-    n_agents = config.get('n_agents', 1)
-    agent_ids = [str(agent_id) for agent_id in range(n_agents)]
-
-    # multibody config
-    mbp_config = {
-        # 'animate': True,
-        'jitter_force': 1e2,
-        'bounds': bounds}
-    body_config = {
-        'bounds': bounds,
-        'agent_ids': agent_ids}
-    mbp_config.update(agent_body_config(body_config))
-
-    # diffusion config
-    dff_config = get_gaussian_config({
-        'molecules': molecules,
-        'n_bins': n_bins,
-        'bounds': bounds,
-        'diffusion': diffusion,
-        'center': center,
-        'deviation': deviation})
-
-    return {
-        'bounds': bounds,
-        'multibody': mbp_config,
-        'diffusion': dff_config,
-    }
-
-
 def test_lattice(config=None, end_time=10):
     if config is None:
-        config = get_lattice_config()
+        config = make_lattice_config()
     # configure the compartment
     compartment = Lattice(config)
 
@@ -154,8 +180,13 @@ def main():
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
-    config = get_lattice_config()
+    config = make_lattice_config(
+        bounds=[25, 25],
+        n_agents=1,
+    )
     data = test_lattice(config, 40)
+
+    import ipdb; ipdb.set_trace()
 
     # make snapshot plot
     agents = {time: time_data['agents'] for time, time_data in data.items()}

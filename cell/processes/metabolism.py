@@ -62,7 +62,7 @@ def get_fg_from_counts(counts_dict, mw):
     return composition_mass.to('fg')
 
 
-def get_minimal_media_BiGG():
+def get_minimal_media_iAF1260b():
     config = get_iAF1260b_config()
     metabolism = Metabolism(config)
     external_concentrations = metabolism.initial_state['external']

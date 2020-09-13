@@ -114,6 +114,8 @@ def get_lattice_config(
 
     return environment_config
 
+
+# iAF1260b environment is set to minimal media for the iAF1260b BiGG model
 def get_iAF1260b_environment(
     time_step=TIME_STEP,
     bounds=[20,20],
