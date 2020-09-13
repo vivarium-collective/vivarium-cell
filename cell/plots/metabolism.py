@@ -18,6 +18,7 @@ def plot_exchanges(timeseries, plot_config, out_dir='out', filename='exchanges')
 
     env_volume = plot_config['environment']['volume']
     legend_on = plot_config.get('legend', True)
+    aspect_ratio = plot_config.get('aspect_ratio', 1)
 
     # pull volume and mass out from internal
     volume = global_ts.pop('volume') * units.fL
@@ -29,7 +30,10 @@ def plot_exchanges(timeseries, plot_config, out_dir='out', filename='exchanges')
     # plot results
     cols = 1
     rows = 3
-    plt.figure(figsize=(cols * 6, rows * 1.5))
+
+    width = 6
+    height = width / aspect_ratio
+    plt.figure(figsize=(width, height))
 
     # define subplots
     ax1 = plt.subplot(rows, cols, 1)
@@ -42,7 +46,7 @@ def plot_exchanges(timeseries, plot_config, out_dir='out', filename='exchanges')
     if legend_on:
         ax1.legend(loc='center left', bbox_to_anchor=(1.0, 0.5), ncol=2)
     ax1.title.set_text('environment: {} (L)'.format(env_volume))
-    ax1.set_ylabel('concentrations (logs)')
+    ax1.set_ylabel('concentrations \n (logs)')
     ax1.set_yscale('log')
 
     # plot internal counts
@@ -54,7 +58,7 @@ def plot_exchanges(timeseries, plot_config, out_dir='out', filename='exchanges')
     if legend_on:
         ax2.legend(loc='center left', bbox_to_anchor=(1.6, 0.5), ncol=3)
     ax2.title.set_text('internal metabolites')
-    ax2.set_ylabel('delta counts (log)')
+    ax2.set_ylabel('delta counts \n (log)')
     ax2.set_yscale('log')
 
     # plot mass
@@ -72,7 +76,7 @@ def plot_exchanges(timeseries, plot_config, out_dir='out', filename='exchanges')
 
     # save figure
     fig_path = os.path.join(out_dir, filename)
-    plt.subplots_adjust(wspace=0.3, hspace=0.5)
+    plt.subplots_adjust(wspace=0.2, hspace=0.2)
     plt.savefig(fig_path, bbox_inches='tight')
 
 # energy carriers in BiGG models
