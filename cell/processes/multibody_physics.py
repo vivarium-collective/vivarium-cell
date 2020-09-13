@@ -209,6 +209,7 @@ class Multibody(Process):
             }
         }
         schema = {'agents': glob_schema}
+
         return schema
 
     def next_update(self, timestep, states):
@@ -378,6 +379,7 @@ def simulate_growth_division(config, settings):
                 'length': {
                     '_divider': 'split'}}})
     experiment.state.apply_subschemas()
+    process_topology = {'agents': ('agents',)}  # TODO -- get topology??
 
     # get initial agent state
     experiment.state.set_value({'agents': initial_agents_state})
@@ -432,7 +434,8 @@ def simulate_growth_division(config, settings):
                         'mother': agent_id,
                         'daughters': daughter_updates}}
                 invoked_update = InvokeUpdate({'agents': update})
-                experiment.send_updates([invoked_update])
+                update_tuples = [(invoked_update, process_topology, agents_store)]
+                experiment.send_updates(update_tuples)
             else:
                 agent_updates[agent_id] = {
                     'boundary': {
@@ -442,7 +445,8 @@ def simulate_growth_division(config, settings):
 
         # update experiment
         invoked_update = InvokeUpdate({'agents': agent_updates})
-        experiment.send_updates([invoked_update])
+        update_tuples = [(invoked_update, process_topology, agents_store)]
+        experiment.send_updates(update_tuples)
 
     return experiment.emitter.get_data()
 
@@ -494,6 +498,7 @@ def simulate_motility(config, settings):
                     '_emit': True,
                 }}})
     experiment.state.apply_subschemas()
+    process_topology = {'agents': ('agents',)}  # TODO -- get topology??
 
     # get initial agent state
     experiment.state.set_value({'agents': initial_agents_state})
@@ -515,7 +520,8 @@ def simulate_motility(config, settings):
                 'motor_state': 1}}
 
     invoked_update = InvokeUpdate({'agents': motile_forces})
-    experiment.send_updates([invoked_update])
+    update_tuples = [(invoked_update, process_topology, agents_store)]
+    experiment.send_updates(update_tuples)
 
     ## run simulation
     # test run/tumble
@@ -564,7 +570,8 @@ def simulate_motility(config, settings):
                     'torque': torque}
 
         invoked_update = InvokeUpdate({'agents': motile_forces})
-        experiment.send_updates([invoked_update])
+        update_tuples = [(invoked_update, process_topology, agents_store)]
+        experiment.send_updates(update_tuples)
 
     return experiment.emitter.get_data()
 
