@@ -34,7 +34,6 @@ def make_lattice_config(
         jitter_force=None,
         bounds=None,
         n_bins=None,
-        n_agents=None,
         depth=None,
         concentrations=None,
         molecules=None,
@@ -76,13 +75,6 @@ def make_lattice_config(
                     '_emit': False}
                 for field_id in molecules
                 if field_id not in keep_fields_emit}}
-    if n_agents:
-        # TODO -- this is setting the agent_ids, might want to pass it in
-        agent_ids = [str(agent_id) for agent_id in range(n_agents)]
-        body_config = {'agent_ids': agent_ids}
-        if bounds:
-            body_config.update({'bounds': bounds})
-        config['multibody']['agents'] = agent_body_config(body_config)
     if parallel:
         config['multibody']['_parallel'] = True
     if set_config:
@@ -152,15 +144,29 @@ class Lattice(Generator):
         }
 
 
-def test_lattice(config=None, end_time=10):
+def test_lattice(
+        config=None,
+        n_agents=1,
+        end_time=10
+):
     if config is None:
         config = make_lattice_config()
     # configure the compartment
     compartment = Lattice(config)
 
+    # set initial agent state
+    if n_agents:
+        agent_ids = [str(agent_id) for agent_id in range(n_agents)]
+        body_config = {'agent_ids': agent_ids}
+        if 'multibody' in config and 'bounds' in config['multibody']:
+            body_config.update({'bounds': config['multibody']['bounds']})
+        initial_agents_state = agent_body_config(body_config)
+        initial_state = {'agents': initial_agents_state}
+
     # configure experiment
     experiment_settings = {
-        'compartment': config}
+        'compartment': config,
+        'initial_state': initial_state}
     experiment = compartment_in_experiment(
         compartment,
         experiment_settings)
@@ -172,6 +178,9 @@ def test_lattice(config=None, end_time=10):
         experiment.update(timestep)
         time += timestep
     data = experiment.emitter.get_data()
+
+    # assert that the agent remains in the simulation until the end
+    assert len(data[end_time]['agents']) == n_agents
     return data
 
 
@@ -180,25 +189,26 @@ def main():
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
+    bounds = [25, 25]
     config = make_lattice_config(
-        bounds=[25, 25],
-        n_agents=1,
+        bounds=bounds,
     )
-    data = test_lattice(config, 40)
-
-    import ipdb; ipdb.set_trace()
+    data = test_lattice(
+        config=config,
+        n_agents=1,
+        end_time=40)
 
     # make snapshot plot
     agents = {time: time_data['agents'] for time, time_data in data.items()}
     fields = {time: time_data['fields'] for time, time_data in data.items()}
-    data = {
+    plot_data = {
         'agents': agents,
         'fields': fields,
-        'config': config}
+        'config': {'bounds': bounds}}
     plot_config = {
         'out_dir': out_dir,
         'filename': 'snapshots'}
-    plot_snapshots(data, plot_config)
+    plot_snapshots(plot_data, plot_config)
 
 
 if __name__ == '__main__':
