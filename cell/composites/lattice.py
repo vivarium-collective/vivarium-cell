@@ -77,6 +77,7 @@ def make_lattice_config(
                 for field_id in molecules
                 if field_id not in keep_fields_emit}}
     if parallel:
+        config['diffusion']['_parallel'] = True
         config['multibody']['_parallel'] = True
     if set_config:
         config = deep_merge(config, set_config)
