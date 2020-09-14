@@ -265,7 +265,7 @@ class ODE_expression(Process):
     def next_update(self, timestep, states):
         internal_state = states['internal']
 
-        # get condition of regulated transcripts (True/False)
+        # get current condition of regulated genes (True/False)
         flattened_states = tuplify_port_dicts(states)
         regulation_condition = {}
         for gene_id, reg_logic in self.regulation.items():
@@ -332,8 +332,10 @@ def get_lacy_config():
     regulators = [
         ('external', 'glc__D_e'),
         ('internal', 'lcts_p')]
-    regulation = {
-        'lacy_RNA': 'if (external, glc__D_e) > 0.1 and (internal, lcts_p) < 0.01'} # inhibited in this condition
+    regulation_condition = {
+        'lacy_RNA': 'if [(external, glc__D_e) > 0.005 '  # limiting concentration of glc at 0.005 mM (Boulineau 2013)
+                    'or (internal, lcts_p) < 0.005]'  # internal lcts is hypothesized to disinhibit lacY transcription
+    }
     transcription_leak = {
         'rate': 1e-4,
         'magnitude': 1e-6,
@@ -354,7 +356,7 @@ def get_lacy_config():
         'degradation_rates': degradation_rates,
         'protein_map': protein_map,
         'regulators': regulators,
-        'regulation': regulation,
+        'regulation': regulation_condition,
         'transcription_leak': transcription_leak,
         'initial_state': initial_state}
 
