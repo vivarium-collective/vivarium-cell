@@ -27,11 +27,11 @@ from vivarium.core.emitter import (
 )
 from vivarium.core.experiment import Experiment
 
-from cell.composites.lattice import Lattice
-from cell.experiments.lattice_experiment import (
-    agents_library,
-    get_lattice_config,
+from cell.composites.lattice import (
+    Lattice,
+    make_lattice_config,
 )
+from cell.experiments.lattice_experiment import agents_library
 from cell.plots.multibody_physics import plot_snapshots
 from cell.plots.colonies import plot_colony_metrics
 from vivarium.library.timeseries import (
@@ -135,7 +135,7 @@ def colony_metrics_experiment(config):
 
 def get_lattice_with_metrics_config():
     config = {
-        'environment': get_lattice_config(
+        'environment': make_lattice_config(
             bounds=DEFAULT_BOUNDS,
         )
     }

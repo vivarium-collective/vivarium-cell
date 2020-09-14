@@ -69,7 +69,7 @@ def get_static_lattice_config(config={}):
     body_config = {
         'bounds': bounds,
         'agent_ids': agent_ids}
-    mbp_config.update(agent_body_config(body_config))
+    mbp_config['agents'] = agent_body_config(body_config)
 
     # field config
     field_config = {

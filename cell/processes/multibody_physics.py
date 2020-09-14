@@ -209,6 +209,7 @@ class Multibody(Process):
             }
         }
         schema = {'agents': glob_schema}
+
         return schema
 
     def next_update(self, timestep, states):
@@ -321,7 +322,7 @@ def agent_body_config(config):
     agent_config = {
         agent_id: single_agent_config(config)
         for agent_id in agent_ids}
-    return {'agents': agent_config}
+    return agent_config
 
 def get_baseline_config(config={}):
     animate = config.get('animate', False)
@@ -340,7 +341,7 @@ def get_baseline_config(config={}):
         'bounds': bounds,
         'agent_ids': agent_ids,
         'location': initial_location}
-    motility_config.update(agent_body_config(body_config))
+    motility_config['agents'] = agent_body_config(body_config)
     return motility_config
 
 # tests and simulations
@@ -348,7 +349,8 @@ def test_multibody(config={'n_agents':1}, time=10):
     n_agents = config.get('n_agents',1)
     agent_ids = [str(agent_id) for agent_id in range(n_agents)]
 
-    body_config = agent_body_config({'agent_ids': agent_ids})
+    body_config = {
+        'agents': agent_body_config({'agent_ids': agent_ids})}
     multibody = Multibody(body_config)
 
     # initialize agent's boundary state
@@ -377,6 +379,7 @@ def simulate_growth_division(config, settings):
                 'length': {
                     '_divider': 'split'}}})
     experiment.state.apply_subschemas()
+    process_topology = {'agents': ('agents',)}  # TODO -- get topology??
 
     # get initial agent state
     experiment.state.set_value({'agents': initial_agents_state})
@@ -431,7 +434,8 @@ def simulate_growth_division(config, settings):
                         'mother': agent_id,
                         'daughters': daughter_updates}}
                 invoked_update = InvokeUpdate({'agents': update})
-                experiment.send_updates([invoked_update])
+                update_tuples = [(invoked_update, process_topology, agents_store)]
+                experiment.send_updates(update_tuples)
             else:
                 agent_updates[agent_id] = {
                     'boundary': {
@@ -441,7 +445,8 @@ def simulate_growth_division(config, settings):
 
         # update experiment
         invoked_update = InvokeUpdate({'agents': agent_updates})
-        experiment.send_updates([invoked_update])
+        update_tuples = [(invoked_update, process_topology, agents_store)]
+        experiment.send_updates(update_tuples)
 
     return experiment.emitter.get_data()
 
@@ -493,6 +498,7 @@ def simulate_motility(config, settings):
                     '_emit': True,
                 }}})
     experiment.state.apply_subschemas()
+    process_topology = {'agents': ('agents',)}  # TODO -- get topology??
 
     # get initial agent state
     experiment.state.set_value({'agents': initial_agents_state})
@@ -514,7 +520,8 @@ def simulate_motility(config, settings):
                 'motor_state': 1}}
 
     invoked_update = InvokeUpdate({'agents': motile_forces})
-    experiment.send_updates([invoked_update])
+    update_tuples = [(invoked_update, process_topology, agents_store)]
+    experiment.send_updates(update_tuples)
 
     ## run simulation
     # test run/tumble
@@ -563,7 +570,8 @@ def simulate_motility(config, settings):
                     'torque': torque}
 
         invoked_update = InvokeUpdate({'agents': motile_forces})
-        experiment.send_updates([invoked_update])
+        update_tuples = [(invoked_update, process_topology, agents_store)]
+        experiment.send_updates(update_tuples)
 
     return experiment.emitter.get_data()
 
@@ -638,7 +646,7 @@ def run_growth_division(config={}):
     body_config = {
         'bounds': bounds,
         'agent_ids': agent_ids}
-    gd_config.update(agent_body_config(body_config))
+    gd_config['agents'] = agent_body_config(body_config)
     gd_data = simulate_growth_division(gd_config, settings)
 
     # snapshots plot
