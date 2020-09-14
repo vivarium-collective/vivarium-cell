@@ -265,28 +265,29 @@ class ODE_expression(Process):
     def next_update(self, timestep, states):
         internal_state = states['internal']
 
-        # get state of regulated reactions (True/False)
+        # get condition of regulated transcripts (True/False)
         flattened_states = tuplify_port_dicts(states)
-        regulation_state = {}
+        regulation_condition = {}
         for gene_id, reg_logic in self.regulation.items():
-            regulation_state[gene_id] = reg_logic(flattened_states)
+            regulation_condition[gene_id] = reg_logic(flattened_states)
 
         internal_update = {}
         # transcription: dM/dt = k_M - d_M * M
         # M: conc of mRNA, k_M: transcription rate, d_M: degradation rate
-        for transcript, rate in self.transcription.items():
-            transcript_state = internal_state[transcript]
-
-            # do not transcribe inhibited genes, except for transcription leaks
-            if transcript in regulation_state and regulation_state.get(transcript):
-                # leak probability for probability as function of the time step
-                rate = -math.log(1 - self.transcription_leak_rate)
-                leak_probability = 1 - math.exp(-rate * timestep)
+        for transcript, baseline_rate in self.transcription.items():
+            rate = 0.0
+            # do not transcribe regulated genes (rate = 0), except for transcriptional leaks
+            if regulation_condition.get(transcript, False):
+                # leak probability as function of the time step
+                leak_rate = -math.log(1 - self.transcription_leak_rate)
+                leak_probability = 1 - math.exp(-leak_rate * timestep)
                 if random.uniform(0, 1) < leak_probability:
                     rate = self.transcription_leak_magnitude
-                else:
-                    rate = 0.0
+                    print('TRANSCRIPTION LEAK!')
+            else:
+                rate = baseline_rate
 
+            transcript_state = internal_state[transcript]
             internal_update[transcript] = \
                 (rate - self.degradation.get(transcript, 0) * transcript_state) * timestep
 
