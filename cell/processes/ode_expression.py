@@ -274,8 +274,7 @@ class ODE_expression(Process):
         internal_update = {}
         # transcription: dM/dt = k_M - d_M * M
         # M: conc of mRNA, k_M: transcription rate, d_M: degradation rate
-        for transcript, baseline_rate in self.transcription.items():
-            rate = 0.0
+        for transcript, rate in self.transcription.items():
             # do not transcribe regulated genes (rate = 0), except for transcriptional leaks
             if regulation_condition.get(transcript, False):
                 # leak probability as function of the time step
@@ -283,9 +282,9 @@ class ODE_expression(Process):
                 leak_probability = 1 - math.exp(-leak_rate * timestep)
                 if random.uniform(0, 1) < leak_probability:
                     rate = self.transcription_leak_magnitude
-                    print('TRANSCRIPTION LEAK!')
-            else:
-                rate = baseline_rate
+                    # print('TRANSCRIPTION LEAK!')
+                else:
+                    rate = 0.0
 
             transcript_state = internal_state[transcript]
             internal_update[transcript] = \
