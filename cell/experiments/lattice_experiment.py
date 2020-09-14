@@ -4,27 +4,12 @@ import os
 import sys
 import argparse
 import uuid
-import random
-import pytest
 
-import numpy as np
-
-from vivarium.core.emitter import path_timeseries_from_data
-from vivarium.library.timeseries import (
-    process_path_timeseries_for_csv,
-    save_flat_timeseries,
-)
-from vivarium.core.experiment import (
-    Experiment
-)
 from vivarium.core.composition import (
     agent_environment_experiment,
     simulate_experiment,
     plot_agents_multigen,
     EXPERIMENT_OUT_DIR,
-    REFERENCE_DATA_DIR,
-    load_timeseries,
-    assert_timeseries_close,
 )
 from cell.plots.multibody_physics import (
     plot_snapshots,
@@ -32,13 +17,13 @@ from cell.plots.multibody_physics import (
 )
 
 # processes
-from cell.processes.metabolism import (
-    Metabolism,
-    get_iAF1260b_config,
-)
+from cell.processes.metabolism import get_minimal_media_iAF1260b
 
 # composites
-from cell.composites.lattice import Lattice
+from cell.composites.lattice import (
+    Lattice,
+    make_lattice_config,
+)
 from cell.composites.growth_division import GrowthDivision
 from cell.composites.growth_division_minimal import GrowthDivisionMinimal
 
@@ -48,6 +33,7 @@ NAME = 'lattice'
 OUT_DIR = os.path.join(EXPERIMENT_OUT_DIR, NAME)
 DEFAULT_ENVIRONMENT_TYPE = Lattice
 TIME_STEP = 1
+
 
 
 # agents and their configurations
@@ -75,50 +61,10 @@ agents_library = {
 }
 
 
-# environment config
-def get_lattice_config(
-    time_step=TIME_STEP,
-    bounds=[20, 20],
-    n_bins=[10, 10],
-    jitter_force=1e-4,
-    depth=3000.0,
-    diffusion=1e-2,
-    molecules=['glc__D_e', 'lcts_e'],
-    gradient={},
-    keep_fields_emit=[],
-):
-
-    environment_config = {
-        'multibody': {
-            'time_step': time_step,
-            'bounds': bounds,
-            'jitter_force': jitter_force,
-            'agents': {}
-        },
-        'diffusion': {
-            'time_step': time_step,
-            'molecules': molecules,
-            'n_bins': n_bins,
-            'bounds': bounds,
-            'depth': depth,
-            'diffusion': diffusion,
-            'gradient': gradient,
-            '_schema': {
-                'fields': {
-                    field_id: {
-                        '_emit': False}
-                    for field_id in molecules
-                    if field_id not in keep_fields_emit}}
-        }
-    }
-
-    return environment_config
-
-
 # iAF1260b environment is set to minimal media for the iAF1260b BiGG model
 def get_iAF1260b_environment(
     time_step=TIME_STEP,
-    bounds=[20,20],
+    bounds=[20, 20],
     n_bins=[10, 10],
     jitter_force=1e-4,
     depth=3000.0,
@@ -127,35 +73,28 @@ def get_iAF1260b_environment(
     override_initial={},
     keep_fields_emit=[],
 ):
-    # get external state from iAF1260b metabolism
-    config = get_iAF1260b_config()
-    metabolism = Metabolism(config)
-    molecules = {
-        mol_id: conc * scale_concentration
-        for mol_id, conc in metabolism.initial_state['external'].items()
-    }
-    for mol_id, conc in override_initial.items():
-        molecules[mol_id] = conc
-    gradient = {
-        'type': 'uniform',
-        'molecules': molecules}
-    return get_lattice_config(
+    media = get_minimal_media_iAF1260b(
+        scale_concentration=scale_concentration,
+        override_initial=override_initial
+    )
+    return make_lattice_config(
         time_step=time_step,
         bounds=bounds,
-        molecules=list(molecules.keys()),
         n_bins=n_bins,
         jitter_force=jitter_force,
         depth=depth,
         diffusion=diffusion,
-        gradient=gradient,
+        concentrations=media,
         keep_fields_emit=keep_fields_emit,
     )
 
 environments_library = {
     'glc_lcts': {
         'type': DEFAULT_ENVIRONMENT_TYPE,
-        'config': get_lattice_config(
-            bounds=[30,30],
+        'config': make_lattice_config(
+            molecules=['glc__D_e', 'lcts_e'],
+            bounds=[30, 30],
+            n_bins=[20, 20],
             jitter_force=1e-5,
         ),
     },
@@ -203,8 +142,7 @@ def get_experiment_settings(
         'emit_step': emit_step,
         'emitter': emitter,
         'agent_names': agent_names,
-        'return_raw_data': return_raw_data
-    }
+        'return_raw_data': return_raw_data}
 
 
 # plot settings
@@ -424,6 +362,7 @@ def main():
         make_dir(minimal_out_dir)
         run_workflow(
             agent_type='growth_division_minimal',
+            environment_type='glc_lcts',
             experiment_settings=get_experiment_settings(
                 total_time=6000
             ),
@@ -436,7 +375,7 @@ def main():
             agent_type='growth_division',
             environment_type='glc_lcts',
             experiment_settings=get_experiment_settings(
-                total_time=18000
+                total_time=12000
             ),
             plot_settings=get_plot_settings(
                 skip_paths=[
@@ -454,34 +393,6 @@ def main():
                 n_snapshots=5,
             ),
             out_dir=gd_out_dir)
-
-    elif args.flagella_metabolism:
-        txp_mtb_out_dir = os.path.join(out_dir, 'flagella_metabolism')
-        make_dir(txp_mtb_out_dir)
-        run_workflow(
-            agent_type='flagella_metabolism',
-            environment_type='iAF1260b',
-            initial_agent_state=get_flagella_metabolism_initial_state(),
-            experiment_settings=get_experiment_settings(
-                emit_step=120,
-                agent_names=True,
-                emitter='database',
-                total_time=12000,
-            ),
-            plot_settings=get_plot_settings(
-                skip_paths=[
-                    ('boundary', 'external')
-                ],
-                fields=[
-                    'glc__D_e',
-                ],
-                tags=[
-                    ('proteins', 'flagella'),
-                ],
-                background_color='black',
-                n_snapshots=5,
-            ),
-            out_dir=txp_mtb_out_dir)
 
 
 
