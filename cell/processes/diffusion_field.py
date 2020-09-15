@@ -13,7 +13,6 @@ import argparse
 import numpy as np
 from scipy import constants
 from scipy.ndimage import convolve
-import matplotlib.pyplot as plt
 
 from vivarium.core.process import Process
 from vivarium.core.composition import (
@@ -231,7 +230,6 @@ class DiffusionField(Process):
         'depth': 3000.0,  # um
         'diffusion': 5e-1,
         'gradient': {},
-        'agents': {},
     }
 
     def __init__(self, initial_parameters=None):
@@ -269,9 +267,6 @@ class DiffusionField(Process):
             gradient_fields = make_gradient(gradient, self.n_bins, self.bounds)
             self.initial_state.update(gradient_fields)
 
-        # agents
-        self.initial_agents = initial_parameters.get('agents', self.defaults['agents'])
-
         parameters = {}
         parameters.update(initial_parameters)
 
@@ -284,23 +279,15 @@ class DiffusionField(Process):
                 '_updater': 'set'}
             for molecule in self.molecule_ids}
 
-        schema = {'agents': {}}
-        for agent_id, states in self.initial_agents.items():
-            location = states['boundary'].get('location', [])
-            schema['agents'][agent_id] = {
-                'boundary': {
-                    'location': {
-                        '_value': location},
-                }
-            }
-        glob_schema = {
-            '*': {
-                'boundary': {
-                    'location': {
-                        '_default': [0.5 * bound for bound in self.bounds],
-                        '_updater': 'set'},
-                    'external': local_concentration_schema}}}
-        schema['agents'].update(glob_schema)
+        # agents glob schema
+        schema = {
+            'agents': {
+                '*': {
+                    'boundary': {
+                        'location': {
+                            '_default': [0.5 * bound for bound in self.bounds],
+                            '_updater': 'set'},
+                        'external': local_concentration_schema}}}}
 
         # fields
         fields_schema = {
@@ -460,37 +447,15 @@ def get_exponential_config(config={}):
                     'base': base,
                     'scale': scale}}}}
 
-def get_secretion_agent_config(config={}):
-    molecules = config.get('molecules', ['glc'])
-    bounds = config.get('bounds', (20, 20))
-    n_bins = config.get('n_bins', (10, 10))
-    depth = config.get('depth', 30)
-    n_agents = config.get('n_agents', 3)
-
-    agents = {}
-    for agent in range(n_agents):
-        agent_id = str(agent)
-        agents[agent_id] = {
-            'boundary': {
-                'location': [
-                        np.random.uniform(0, bounds[0]),
-                        np.random.uniform(0, bounds[1])],
-                'external': {
-                    mol_id: 0 for mol_id in molecules}}}
-    return {
-        'molecules': molecules,
-        'n_bins': n_bins,
-        'bounds': bounds,
-        'depth': depth,
-        'agents': agents,
-        'initial_state': {
-            mol_id: np.ones((n_bins[0], n_bins[1]))
-            for mol_id in molecules}}
-
-def test_diffusion_field(config=get_gaussian_config(), time=10):
+def test_diffusion_field(
+        config={},
+        initial_state={},
+        time=10,
+):
     diffusion = DiffusionField(config)
     settings = {
         'return_raw_data': True,
+        'initial_state': initial_state,
         'total_time': time,
         'timestep': 1}
     return simulate_process(diffusion, settings)
@@ -515,26 +480,29 @@ if __name__ == '__main__':
     parser.add_argument('--random', '-r', action='store_true', default=False)
     parser.add_argument('--gaussian', '-g', action='store_true', default=False)
     parser.add_argument('--exponential', '-e', action='store_true', default=False)
-    parser.add_argument('--secretion', '-s', action='store_true', default=False)
     args = parser.parse_args()
     no_args = (len(sys.argv) == 1)
 
     if args.random or no_args:
         config = get_random_field_config()
-        data = test_diffusion_field(config, 10)
+        data = test_diffusion_field(
+            config=config,
+            initial_state={},
+            time=60)
         plot_fields(data, config, out_dir, 'random_field')
 
     if args.gaussian or no_args:
         config = get_gaussian_config()
-        data = test_diffusion_field(config, 10)
+        data = test_diffusion_field(
+            config=config,
+            initial_state={},
+            time=60)
         plot_fields(data, config, out_dir, 'gaussian_field')
 
     if args.exponential or no_args:
         config = get_exponential_config()
-        data = test_diffusion_field(config, 20)
+        data = test_diffusion_field(
+            config=config,
+            initial_state={},
+            time=60)
         plot_fields(data, config, out_dir, 'exponential_field')
-
-    if args.secretion or no_args:
-        config = get_secretion_agent_config()
-        data = test_diffusion_field(config, 10)
-        plot_fields(data, config, out_dir, 'secretion')
