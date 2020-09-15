@@ -122,7 +122,6 @@ class Multibody(Process):
 
     name = NAME
     defaults = {
-        'agents': {},
         'jitter_force': 1e-3,  # pN
         'agent_shape': 'segment',
         'bounds': DEFAULT_BOUNDS,

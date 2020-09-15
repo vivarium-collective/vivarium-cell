@@ -97,7 +97,6 @@ class Lattice(Generator):
         'multibody': {
             'bounds': [10, 10],
             'size': [10, 10],
-            'agents': {}
         },
         'diffusion': {
             'molecules': ['glc'],

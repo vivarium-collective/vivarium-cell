@@ -265,28 +265,27 @@ class ODE_expression(Process):
     def next_update(self, timestep, states):
         internal_state = states['internal']
 
-        # get state of regulated reactions (True/False)
+        # get current condition of regulated genes (True/False)
         flattened_states = tuplify_port_dicts(states)
-        regulation_state = {}
+        regulation_condition = {}
         for gene_id, reg_logic in self.regulation.items():
-            regulation_state[gene_id] = reg_logic(flattened_states)
+            regulation_condition[gene_id] = reg_logic(flattened_states)
 
         internal_update = {}
         # transcription: dM/dt = k_M - d_M * M
         # M: conc of mRNA, k_M: transcription rate, d_M: degradation rate
         for transcript, rate in self.transcription.items():
-            transcript_state = internal_state[transcript]
-
-            # do not transcribe inhibited genes, except for transcription leaks
-            if transcript in regulation_state and regulation_state.get(transcript):
-                # leak probability for probability as function of the time step
-                rate = -math.log(1 - self.transcription_leak_rate)
-                leak_probability = 1 - math.exp(-rate * timestep)
+            # do not transcribe regulated genes (rate = 0), except for transcriptional leaks
+            if regulation_condition.get(transcript, False):
+                # leak probability as function of the time step
+                leak_rate = -math.log(1 - self.transcription_leak_rate)
+                leak_probability = 1 - math.exp(-leak_rate * timestep)
                 if random.uniform(0, 1) < leak_probability:
                     rate = self.transcription_leak_magnitude
                 else:
                     rate = 0.0
 
+            transcript_state = internal_state[transcript]
             internal_update[transcript] = \
                 (rate - self.degradation.get(transcript, 0) * transcript_state) * timestep
 
@@ -331,8 +330,10 @@ def get_lacy_config():
     regulators = [
         ('external', 'glc__D_e'),
         ('internal', 'lcts_p')]
-    regulation = {
-        'lacy_RNA': 'if (external, glc__D_e) > 0.1 and (internal, lcts_p) < 0.01'} # inhibited in this condition
+    regulation_condition = {
+        'lacy_RNA': 'if [(external, glc__D_e) > 0.005 '  # limiting concentration of glc at 0.005 mM (Boulineau 2013)
+                    'or (internal, lcts_p) < 0.005]'  # internal lcts is hypothesized to disinhibit lacY transcription
+    }
     transcription_leak = {
         'rate': 1e-4,
         'magnitude': 1e-6,
@@ -353,7 +354,7 @@ def get_lacy_config():
         'degradation_rates': degradation_rates,
         'protein_map': protein_map,
         'regulators': regulators,
-        'regulation': regulation,
+        'regulation': regulation_condition,
         'transcription_leak': transcription_leak,
         'initial_state': initial_state}
 
