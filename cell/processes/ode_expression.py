@@ -282,7 +282,6 @@ class ODE_expression(Process):
                 leak_probability = 1 - math.exp(-leak_rate * timestep)
                 if random.uniform(0, 1) < leak_probability:
                     rate = self.transcription_leak_magnitude
-                    # print('TRANSCRIPTION LEAK!')
                 else:
                     rate = 0.0
 
