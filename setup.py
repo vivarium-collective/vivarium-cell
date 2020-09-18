@@ -13,6 +13,7 @@ setup(
     version='0.0.18',
     packages=[
         'cell',
+        'cell.analysis',
         'cell.bigg_models',
         'cell.composites',
         'cell.data',
