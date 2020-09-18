@@ -1,6 +1,6 @@
-# Authors of Vivarium Core
+# Authors of Vivarium Cell
 
-Vivarium Core was built by:
+Vivarium Cell was built by:
 
 * Members of the [Covert Lab](https://covert.stanford.edu) at
   [Stanford University](https://stanford.edu):
