@@ -35,7 +35,7 @@ setup(
     entry_points={
         'console_scripts': []},
     description=(
-        'A collection of models for simulating cells with Vivarium.')
+        'A collection of models for simulating cells with Vivarium.'),
     long_description=long_description,
     long_description_content_type='text/markdown',
     include_package_data=True,
