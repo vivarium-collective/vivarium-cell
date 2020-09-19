@@ -31,7 +31,7 @@ def plot_exchanges(timeseries, plot_config, out_dir='out', filename='exchanges')
     cols = 1
     rows = 3
 
-    width = 6
+    width = 5
     height = width / aspect_ratio
     plt.figure(figsize=(width, height))
 
@@ -45,8 +45,8 @@ def plot_exchanges(timeseries, plot_config, out_dir='out', filename='exchanges')
         ax1.plot(series, label=mol_id)
     if legend_on:
         ax1.legend(loc='center left', bbox_to_anchor=(1.0, 0.5), ncol=2)
-    ax1.title.set_text('environment: {} (L)'.format(env_volume))
-    ax1.set_ylabel('concentrations \n (logs)')
+    ax1.title.set_text('environment: {}'.format(env_volume))
+    ax1.set_ylabel('external \n (mM)')
     ax1.set_yscale('log')
 
     # plot internal counts
@@ -57,13 +57,13 @@ def plot_exchanges(timeseries, plot_config, out_dir='out', filename='exchanges')
 
     if legend_on:
         ax2.legend(loc='center left', bbox_to_anchor=(1.6, 0.5), ncol=3)
-    ax2.title.set_text('internal metabolites')
-    ax2.set_ylabel('delta counts \n (log)')
+    # ax2.title.set_text('internal metabolites')
+    ax2.set_ylabel('metabolites \n (counts)')
     ax2.set_yscale('log')
 
     # plot mass
     ax3.plot(mass, label='mass')
-    ax3.set_ylabel('mass (fg)')
+    ax3.set_ylabel('mass \n (fg)')
 
     # adjust axes
     for axis in [ax1, ax2, ax3]:
@@ -72,11 +72,11 @@ def plot_exchanges(timeseries, plot_config, out_dir='out', filename='exchanges')
 
     ax1.set_xticklabels([])
     ax2.set_xticklabels([])
-    ax3.set_xlabel('time (s)', fontsize=12)
+    ax3.set_xlabel('time (s)')
 
     # save figure
     fig_path = os.path.join(out_dir, filename)
-    plt.subplots_adjust(wspace=0.2, hspace=0.2)
+    plt.subplots_adjust(wspace=0.3, hspace=0.3)
     plt.savefig(fig_path, bbox_inches='tight')
 
 # energy carriers in BiGG models
@@ -90,10 +90,6 @@ BiGG_energy_carriers = [
 
 def energy_synthesis_plot(timeseries, settings, out_dir, figname='energy_use'):
     # plot the synthesis of energy carriers in BiGG model output
-
-    import ipdb; ipdb.set_trace()
-
-
     energy_reactions = settings.get('reactions', {})
     saved_reactions = timeseries['reactions']
     time_vec = timeseries['time']
