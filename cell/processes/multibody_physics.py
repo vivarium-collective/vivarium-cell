@@ -38,7 +38,6 @@ from cell.plots.multibody_physics import (
     plot_agents,
     plot_snapshots,
     plot_temporal_trajectory,
-    plot_motility,
 )
 
 
@@ -622,8 +621,6 @@ def run_motility(config={}, out_dir='out', filename='motility'):
     motility_data = simulate_motility(motility_config, motility_sim_settings)
     motility_timeseries = timeseries_from_data(motility_data)
 
-    # make motility plot
-    plot_motility(motility_timeseries, out_dir, filename + '_analysis')
     plot_temporal_trajectory(motility_timeseries, motility_config, out_dir, filename + '_trajectory')
 
 def run_growth_division(config={}):
