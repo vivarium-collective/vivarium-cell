@@ -426,6 +426,8 @@ def plot_tags(data, plot_config):
               :py:class:`tuple` of the path in the agent compartment
               to where the molecule's count can be found, with the last
               value being the molecule's count variable.
+            * **convert_to_concs** (:py:class:`bool`): if True, convert counts
+              to concentrations.
             * **background_color** (:py:class:`str`): use matplotlib colors,
               ``black`` by default
             * **tag_label_size** (:py:class:`float`): The font size for
@@ -444,6 +446,7 @@ def plot_tags(data, plot_config):
     tag_path_name_map = plot_config.get('tag_path_name_map', {})
     tag_label_size = plot_config.get('tag_label_size', 20)
     default_font_size = plot_config.get('default_font_size', 36)
+    convert_to_concs = plot_config.get('convert_to_concs', True)
 
     if tagged_molecules == []:
         raise ValueError('At least one molecule must be tagged.')
@@ -469,15 +472,16 @@ def plot_tags(data, plot_config):
         for agent_id, agent_data in time_data.items():
             volume = agent_data.get('boundary', {}).get('volume', 0)
             for tag_id in tagged_molecules:
-                count = get_value_from_path(agent_data, tag_id)
-                conc = count / volume if volume else 0
+                level = get_value_from_path(agent_data, tag_id)
+                if convert_to_concs:
+                    level = level / volume if volume else 0
                 if tag_id in tag_ranges:
                     tag_ranges[tag_id] = [
-                        min(tag_ranges[tag_id][0], conc),
-                        max(tag_ranges[tag_id][1], conc)]
+                        min(tag_ranges[tag_id][0], level),
+                        max(tag_ranges[tag_id][1], level)]
                 else:
                     # add new tag
-                    tag_ranges[tag_id] = [conc, conc]
+                    tag_ranges[tag_id] = [level, level]
 
                     # select random initial hue
                     hue = random.choice(HUES)
@@ -519,9 +523,10 @@ def plot_tags(data, plot_config):
                 agent_color = BASELINE_TAG_COLOR
 
                 # get current tag concentration, and determine color
-                count = get_value_from_path(agent_data, tag_id)
-                volume = agent_data.get('boundary', {}).get('volume', 0)
-                level = count / volume if volume else 0
+                level = get_value_from_path(agent_data, tag_id)
+                if convert_to_concs:
+                    volume = agent_data.get('boundary', {}).get('volume', 0)
+                    level = level / volume if volume else 0
                 if min_tag != max_tag:
                     concentrations.append(level)
                     intensity = max((level - min_tag), 0)
@@ -541,7 +546,8 @@ def plot_tags(data, plot_config):
                 cbar_col = col_idx + 1
                 ax = fig.add_subplot(grid[row_idx, cbar_col])
                 if row_idx == 0:
-                    ax.set_title('Concentration (counts/fL)', y=1.08)
+                    if convert_to_concs:
+                        ax.set_title('Concentration (counts/fL)', y=1.08)
                 ax.axis('off')
                 if min_tag == max_tag:
                     continue

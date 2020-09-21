@@ -82,7 +82,7 @@ class PymunkMultibody(object):
         'angular_damping': 0.8,
         'friction': 0.9,  # does this do anything?
         'physics_dt': 0.001,
-        'force_scaling': 1e2,  # scales from pN
+        'force_scaling': 4e4,  # scales from pN
         # configured parameters
         'jitter_force': 1e-3,  # pN
         'bounds': [20, 20],
