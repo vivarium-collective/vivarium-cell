@@ -2,6 +2,8 @@
 [vivarium-cell](https://github.com/vivarium-collective/vivarium-cell) is a library of configurable
  cell process and composites for vivarium projects.
 
+![vivarium](doc/_static/lacY_transport.png)
+
 # Installation
 vivarium-cell can be used as a python library. To install:
 ```
