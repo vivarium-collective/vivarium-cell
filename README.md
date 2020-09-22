@@ -25,12 +25,12 @@ $ pip install -r requirements.txt
 Each process file under `cell/processes` can run on its own. Some of these have their own command line options.
 For example, call the `convenience_kinetics` process with:
 ```
-$ python cell/processes/convenience_kinetics.py
+$ python vivarium_cell/processes/convenience_kinetics.py
 ```
 
 Composites with multiple integrated processes can also be executed on their own:
 ```
-$ python cell/composites/gene_expression.py
+$ python vivarium_cell/composites/gene_expression.py
 ```
 
 # Experiments
@@ -50,5 +50,5 @@ $ pytest -m 'not slow'
 # Logging
 Logging is done with python logging. To print out logging information, run a simulation with:
 ```
-$ LOGLEVEL=INFO python cell/..
+$ LOGLEVEL=INFO python vivarium_cell/..
 ```

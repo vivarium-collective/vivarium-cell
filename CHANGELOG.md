@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.0.21
+
+* `vivarium_cell` is the base directory
+
 ## v0.0.19
 
 * Add `cell.analysis` module to `setup.py`.
