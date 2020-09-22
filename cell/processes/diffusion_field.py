@@ -294,7 +294,7 @@ class DiffusionField(Process):
             'fields': {
                 field: {
                     '_value': self.initial_state.get(field, self.ones_field()),
-                    '_updater': 'accumulate',
+                    '_updater': 'nonnegative_accumulate',
                     '_emit': True,
                 }
                 for field in self.molecule_ids
