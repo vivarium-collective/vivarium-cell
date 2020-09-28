@@ -18,8 +18,8 @@ from vivarium.core.composition import (
     assert_timeseries_close,
     load_timeseries,
     simulate_experiment,
-    plot_agents_multigen,
 )
+from vivarium.plots.agents_multigen import plot_agents_multigen
 from vivarium.core.emitter import (
     path_timeseries_from_data,
     path_timeseries_from_embedded_timeseries,

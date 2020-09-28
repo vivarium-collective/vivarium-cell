@@ -16,9 +16,9 @@ from vivarium.core.process import Process
 from vivarium.library.dict_utils import deep_merge, tuplify_port_dicts
 from vivarium.core.composition import (
     simulate_process_in_experiment,
-    plot_simulation_output,
     PROCESS_OUT_DIR,
 )
+from vivarium.plots.simulation_output import plot_simulation_output
 from vivarium.library.units import units
 from vivarium_cell.library.regulation_logic import build_rule
 from vivarium_cell.processes.derive_globals import AVOGADRO

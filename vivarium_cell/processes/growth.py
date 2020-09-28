@@ -8,9 +8,9 @@ from vivarium.library.units import units
 from vivarium.core.process import Process
 from vivarium.core.composition import (
     simulate_process_in_experiment,
-    plot_simulation_output,
     PROCESS_OUT_DIR,
 )
+from vivarium.plots.simulation_output import plot_simulation_output
 
 
 NAME = 'growth'

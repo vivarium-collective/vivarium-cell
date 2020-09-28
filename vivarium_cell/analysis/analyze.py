@@ -8,7 +8,7 @@ from vivarium_cell.plots.multibody_physics import (
     plot_snapshots,
     plot_tags,
 )
-from vivarium.core.composition import plot_agents_multigen
+from vivarium.plots.agents_multigen import plot_agents_multigen
 from vivarium.core.emitter import (
     get_atlas_client,
     get_local_client,

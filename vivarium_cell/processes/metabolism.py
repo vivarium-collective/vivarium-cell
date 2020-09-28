@@ -28,8 +28,8 @@ from vivarium.core.composition import (
     load_timeseries,
     assert_timeseries_close,
     PROCESS_OUT_DIR,
-    plot_simulation_output
 )
+from vivarium.plots.simulation_output import plot_simulation_output
 from vivarium.library.make_network import (
     get_reactions,
     make_network,

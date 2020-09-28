@@ -14,13 +14,14 @@ from vivarium.library.units import units
 from vivarium.library.dict_utils import deep_merge, deep_merge_check
 from vivarium.core.composition import (
     simulate_process_in_experiment,
-    plot_simulation_output,
     flatten_timeseries,
     save_timeseries,
     load_timeseries,
     PROCESS_OUT_DIR,
     assert_timeseries_close,
 )
+from vivarium.plots.simulation_output import plot_simulation_output
+
 
 from vivarium_cell.processes.convenience_kinetics import ConvenienceKinetics
 from vivarium_cell.data import REFERENCE_DATA_DIR
