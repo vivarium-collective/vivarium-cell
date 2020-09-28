@@ -35,7 +35,6 @@ from vivarium.core.experiment import schema_for
 from vivarium.core.process import Process
 from vivarium.core.composition import (
     simulate_process_in_experiment,
-    plot_simulation_output,
     flatten_timeseries,
     save_timeseries,
     load_timeseries,
@@ -44,12 +43,11 @@ from vivarium.core.composition import (
 )
 from vivarium.library.dict_utils import tuplify_port_dicts
 from vivarium.library.units import units, remove_units
+from vivarium.plots.simulation_output import plot_simulation_output
 
 # vivarium-vivarium_cell imports
 from vivarium_cell.library.kinetic_rate_laws import KineticFluxModel
 from vivarium_cell.data import REFERENCE_DATA_DIR
-
-import vivarium_cell.processes
 
 
 #: The name of the process, which is used to name the subdirectory under

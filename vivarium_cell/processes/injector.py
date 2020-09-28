@@ -16,12 +16,12 @@ from __future__ import absolute_import, division, print_function
 import os
 
 from vivarium.core.composition import (
-    plot_simulation_output,
     simulate_process,
     TEST_OUT_DIR,
     save_timeseries,
 )
 from vivarium.core.process import Process
+from vivarium.plots.simulation_output import plot_simulation_output
 
 NAME = 'injector'
 

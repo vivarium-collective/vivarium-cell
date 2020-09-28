@@ -6,8 +6,8 @@ from vivarium.core.process import Generator
 from vivarium.core.composition import (
     COMPARTMENT_OUT_DIR,
     simulate_compartment_in_experiment,
-    plot_simulation_output,
 )
+from vivarium.plots.simulation_output import plot_simulation_output
 from vivarium.library.units import units
 
 # processes

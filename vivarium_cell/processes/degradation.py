@@ -7,9 +7,9 @@ from vivarium.library.dict_utils import keys_list
 from vivarium.core.process import Process
 from vivarium.core.composition import (
     simulate_process,
-    plot_simulation_output,
     PROCESS_OUT_DIR,
 )
+from vivarium.plots.simulation_output import plot_simulation_output
 from vivarium.library.units import units
 
 from vivarium_cell.data.nucleotides import nucleotides

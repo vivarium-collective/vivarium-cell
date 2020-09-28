@@ -5,9 +5,9 @@ import os
 from vivarium.core.process import Generator
 from vivarium.core.composition import (
     simulate_compartment_in_experiment,
-    plot_simulation_output,
     COMPARTMENT_OUT_DIR
 )
+from vivarium.plots.simulation_output import plot_simulation_output
 
 # processes/composites
 from vivarium_cell.plots.gene_expression import plot_gene_expression_output

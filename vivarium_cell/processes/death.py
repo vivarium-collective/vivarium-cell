@@ -40,11 +40,11 @@ from __future__ import absolute_import, division, print_function
 import os
 
 from vivarium.core.composition import (
-    plot_simulation_output,
     simulate_compartment_in_experiment,
     PROCESS_OUT_DIR,
 )
 from vivarium.core.process import Process, Generator
+from vivarium.plots.simulation_output import plot_simulation_output
 
 TOY_ANTIBIOTIC_THRESHOLD = 5.0
 TOY_INJECTION_RATE = 2.0
