@@ -12,8 +12,8 @@ from vivarium.core.experiment import (
 from vivarium.core.composition import (
     make_agents,
     simulate_experiment,
-    plot_agents_multigen
 )
+from vivarium.plots.agents_multigen import plot_agents_multigen
 
 # composites
 from vivarium_cell.composites.lattice import Lattice

@@ -9,8 +9,8 @@ from vivarium.core.process import Generator
 from vivarium.core.composition import (
     COMPARTMENT_OUT_DIR,
     simulate_compartment_in_experiment,
-    plot_agents_multigen,
 )
+from vivarium.plots.agents_multigen import plot_agents_multigen
 
 # processes
 from vivarium.processes.meta_division import MetaDivision

@@ -8,9 +8,9 @@ import uuid
 from vivarium.core.composition import (
     agent_environment_experiment,
     simulate_experiment,
-    plot_agents_multigen,
     EXPERIMENT_OUT_DIR,
 )
+from vivarium.plots.agents_multigen import plot_agents_multigen
 from vivarium_cell.plots.multibody_physics import (
     plot_snapshots,
     plot_tags
