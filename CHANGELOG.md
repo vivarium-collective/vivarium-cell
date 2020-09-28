@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.0.23
+
+* import from `vivarium/plots`
+
 ## v0.0.21
 
 * `vivarium_cell` is the base directory
