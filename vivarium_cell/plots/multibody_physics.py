@@ -56,17 +56,17 @@ class LineWidthData(Line2D):
     _linewidth = property(_get_lw, _set_lw)
 
 def plot_agent(ax, data, color, agent_shape):
-    # location, orientation, length
     x_center = data['boundary']['location'][0]
     y_center = data['boundary']['location'][1]
-    theta = data['boundary']['angle'] / PI * 180 + 90 # rotate 90 degrees to match field
-    length = data['boundary']['length']
-    width = data['boundary']['width']
 
     # get color, convert to rgb
     rgb = hsv_to_rgb(color)
 
     if agent_shape == 'rectangle':
+        theta = data['boundary']['angle'] / PI * 180 + 90  # rotate 90 degrees to match field
+        length = data['boundary']['length']
+        width = data['boundary']['width']
+
         # get bottom left position
         x_offset = (width / 2)
         y_offset = (length / 2)
@@ -88,6 +88,10 @@ def plot_agent(ax, data, color, agent_shape):
         ax.add_patch(shape)
 
     elif agent_shape == 'segment':
+        theta = data['boundary']['angle'] / PI * 180 + 90  # rotate 90 degrees to match field
+        length = data['boundary']['length']
+        width = data['boundary']['width']
+
         membrane_width = 0.1
         membrane_color = [1, 1, 1]
         radius = width / 2
@@ -117,6 +121,17 @@ def plot_agent(ax, data, color, agent_shape):
         ax.add_line(membrane)
         ax.add_line(line)
 
+    elif agent_shape == 'circle':
+        diameter = data['boundary']['diameter']
+
+        # get bottom left position
+        radius = (diameter / 2)
+        x = x_center - radius
+        y = y_center - radius
+
+        # Create a circle
+        circle = patches.Circle((x, y), radius, linewidth=1, edgecolor='b')
+        ax.add_patch(circle)
 
 def plot_agents(
     ax, agents, agent_colors={}, agent_shape='segment', dead_color=None
@@ -278,6 +293,7 @@ def plot_snapshots(data, plot_config):
     snapshot_times = [time_vec[i] for i in time_indices]
 
     # get fields id and range
+    field_ids = []
     if fields:
         if include_fields is None:
             field_ids = set(fields[time_vec[0]].keys())
