@@ -18,6 +18,8 @@ from vivarium_cell.processes.inclusion_body import InclusionBody
 from vivarium_cell.processes.growth_protein import GrowthProtein
 from vivarium.processes.tree_mass import TreeMass
 
+from vivarium_cell.experiments.control import control
+
 
 NAME = 'inclusion_body_growth'
 
@@ -97,12 +99,7 @@ DEFAULT_CONFIG = {
     }
 }
 
-
-if __name__ == '__main__':
-    out_dir = os.path.join(COMPARTMENT_OUT_DIR, NAME)
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
-
+def test_inclusion_body():
     agent_id = '0'
     parameters = copy.deepcopy(DEFAULT_CONFIG)
     parameters['agent_id'] = agent_id
@@ -119,7 +116,18 @@ if __name__ == '__main__':
         'return_raw_data': True,
         'timestep': 1,
         'total_time': 600}
-    output_data = simulate_compartment_in_experiment(compartment, settings)
+    return simulate_compartment_in_experiment(compartment, settings)
 
+def run_compartment(out_dir):
+    output_data = test_inclusion_body()
     plot_settings = {}
     plot_agents_multigen(output_data, plot_settings, out_dir)
+
+experiments_library = {
+    'inclusion_body': run_compartment,
+}
+
+if __name__ == '__main__':
+    control(
+        experiments_library=experiments_library,
+        out_dir=COMPARTMENT_OUT_DIR)
