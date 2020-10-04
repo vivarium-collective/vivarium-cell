@@ -65,7 +65,7 @@ class InclusionBodyGrowth(Generator):
 
         return {
             'inclusion_body': InclusionBody(config['inclusion_body']),
-            # 'growth': Growth(growth_config),
+            'growth': Growth(growth_config),
             'division': MetaDivision(division_config)}
 
     def generate_topology(self, config):
@@ -78,9 +78,9 @@ class InclusionBodyGrowth(Generator):
                 'molecules': ('internal',),
                 'global': boundary_path,
             },
-            # 'growth': {
-            #     'global': boundary_path
-            # },
+            'growth': {
+                'global': boundary_path
+            },
             'division': {
                 'global': boundary_path,
                 'agents': agents_path
@@ -116,7 +116,7 @@ if __name__ == '__main__':
         'outer_path': ('agents', agent_id),
         'return_raw_data': True,
         'timestep': 1,
-        'total_time': 60}
+        'total_time': 600}
     output_data = simulate_compartment_in_experiment(compartment, settings)
 
     plot_settings = {}
