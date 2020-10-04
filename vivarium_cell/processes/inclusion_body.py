@@ -93,24 +93,27 @@ class InclusionBody(Process):
         molecule_mass = sum(molecules.values())
 
         total_body = front_body + back_body
-        front_ratio = front_body / total_body
-        back_ratio = back_body / total_body
+        if total_body.magnitude > 0:
+            front_ratio = front_body / total_body
+            back_ratio = back_body / total_body
+            front_aggregation = self.aggregation * back_ratio * front_ratio * (front_ratio - back_ratio) * total_body.units
+            back_aggregation = self.aggregation * back_ratio * front_ratio * (back_ratio - front_ratio) * total_body.units
+        else:
+            front_aggregation = total_body
+            back_aggregation = total_body
 
-        total_growth = self.absorption * molecule_mass
-        half_growth = total_growth / 2
+        if molecule_mass.magnitude > 0:
+            total_growth = self.absorption * molecule_mass
+            half_growth = total_growth / 2
+            delta_molecules = {
+                mol_id: - self.absorption * mass / molecule_mass.magnitude
+                for mol_id, mass in molecules.items()}
+        else:
+            half_growth = molecule_mass
+            delta_molecules = {}
 
-        delta_molecules = {
-            mol_id: - self.absorption * mass / molecule_mass.magnitude
-            for mol_id, mass in molecules.items()}
-
-        delta_front = (
-            self.aggregation * back_ratio * front_ratio *
-            (front_ratio - back_ratio) * total_body.units +
-            half_growth) * timestep
-        delta_back = (
-            self.aggregation * back_ratio * front_ratio *
-            (back_ratio - front_ratio) * total_body.units +
-            half_growth) * timestep
+        delta_front = (front_aggregation + half_growth) * timestep
+        delta_back = (back_aggregation + half_growth) * timestep
 
         return {
             'front': {

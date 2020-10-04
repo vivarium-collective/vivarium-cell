@@ -74,6 +74,9 @@ class Growth(Process):
 
         super(Growth, self).__init__(parameters)
 
+    def initial_state(self, config=None):
+        return {}
+
     def ports_schema(self):
         return {
             'global': {
