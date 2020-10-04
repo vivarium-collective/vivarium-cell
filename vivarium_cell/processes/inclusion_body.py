@@ -40,7 +40,7 @@ class InclusionBody(Process):
     def initial_state(self, config=None):
         if config is None:
             config = {}
-        front_back = [0.0 * units.fg, 1.0 * units.fg]
+        front_back = [0.0, 1.0]
         random.shuffle(front_back)
         state = {
             'global': {
@@ -56,7 +56,7 @@ class InclusionBody(Process):
         return {
             'front': {
                 'inclusion_body': {
-                    '_default': 0.0 * units.fg,
+                    '_default': 0.0,
                     '_emit': True,
                     '_properties': {
                         'mw': self.parameters['unit_mw']},
@@ -64,14 +64,18 @@ class InclusionBody(Process):
             },
             'back': {
                 'inclusion_body': {
-                    '_default': 0.0 * units.fg,
+                    '_default': 0.0,
                     '_emit': True,
+                    '_properties': {
+                        'mw': self.parameters['unit_mw']},
                 },
             },
             'molecules': {
                 mol_id: {
-                    '_default': 0.0 * units.fg,
+                    '_default': 0.0,
                     '_emit': True,
+                    '_properties': {
+                        'mw': self.parameters['unit_mw']}
                 }
                 for mol_id in self.parameters['molecules_list']
             },
@@ -93,20 +97,20 @@ class InclusionBody(Process):
         molecule_mass = sum(molecules.values())
 
         total_body = front_body + back_body
-        if total_body.magnitude > 0:
+        if total_body > 0:
             front_ratio = front_body / total_body
             back_ratio = back_body / total_body
-            front_aggregation = self.aggregation * back_ratio * front_ratio * (front_ratio - back_ratio) * total_body.units
-            back_aggregation = self.aggregation * back_ratio * front_ratio * (back_ratio - front_ratio) * total_body.units
+            front_aggregation = self.aggregation * back_ratio * front_ratio * (front_ratio - back_ratio) * total_body
+            back_aggregation = self.aggregation * back_ratio * front_ratio * (back_ratio - front_ratio) * total_body
         else:
             front_aggregation = total_body
             back_aggregation = total_body
 
-        if molecule_mass.magnitude > 0:
+        if molecule_mass > 0:
             total_growth = self.absorption * molecule_mass
             half_growth = total_growth / 2
             delta_molecules = {
-                mol_id: - self.absorption * mass / molecule_mass.magnitude
+                mol_id: - self.absorption * mass / molecule_mass
                 for mol_id, mass in molecules.items()}
         else:
             half_growth = molecule_mass
@@ -139,7 +143,7 @@ def run_inclusion_body(out_dir='out'):
     # get initial state
     initial_state = inclusion_body_process.initial_state({
         'molecules': {
-            'glucose': 1.0 * units.fg}})
+            'glucose': 1.0}})
 
     # run the simulation
     sim_settings = {

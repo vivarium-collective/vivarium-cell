@@ -4,6 +4,7 @@ import os
 import copy
 
 from vivarium.library.units import units
+from vivarium.library.dict_utils import deep_merge
 from vivarium.core.process import Generator
 from vivarium.core.composition import (
     simulate_compartment_in_experiment,
@@ -15,9 +16,7 @@ from vivarium.plots.agents_multigen import plot_agents_multigen
 from vivarium.processes.meta_division import MetaDivision
 from vivarium_cell.processes.inclusion_body import InclusionBody
 from vivarium_cell.processes.growth_protein import GrowthProtein
-from vivarium_cell.processes.growth import Growth
-
-from vivarium.library.dict_utils import deep_merge
+from vivarium.processes.tree_mass import TreeMass
 
 
 NAME = 'inclusion_body_growth'
@@ -27,7 +26,9 @@ class InclusionBodyGrowth(Generator):
 
     defaults = {
         'inclusion_body': {},
-        'growth_rate': 0.006,  # very fast growth
+        'growth': {
+            'growth_rate': 0.006},  # very fast growth
+        'mass': {},
         'boundary_path': ('boundary',),
         'agents_path': ('..', '..', 'agents',),
         'daughter_path': tuple()}
@@ -49,11 +50,6 @@ class InclusionBodyGrowth(Generator):
         return initial_state
 
     def generate_processes(self, config):
-
-        growth_config = config.get('growth', {})
-        growth_rate = config['growth_rate']
-        growth_config['growth_rate'] = growth_rate
-
         # division config
         daughter_path = config['daughter_path']
         agent_id = config['agent_id']
@@ -65,8 +61,10 @@ class InclusionBodyGrowth(Generator):
 
         return {
             'inclusion_body': InclusionBody(config['inclusion_body']),
-            'growth': Growth(growth_config),
-            'division': MetaDivision(division_config)}
+            'growth': GrowthProtein(config['growth']),
+            'mass_deriver': TreeMass(config['mass']),
+            'division': MetaDivision(division_config)
+        }
 
     def generate_topology(self, config):
         boundary_path = config['boundary_path']
@@ -79,6 +77,10 @@ class InclusionBodyGrowth(Generator):
                 'global': boundary_path,
             },
             'growth': {
+                'internal': ('internal',),
+                'global': boundary_path
+            },
+            'mass_deriver': {
                 'global': boundary_path
             },
             'division': {
@@ -108,7 +110,7 @@ if __name__ == '__main__':
 
     initial_state = compartment.initial_state({
         'internal': {
-            'glucose': 1.0 * units.fg}})
+            'glucose': 1.0}})
 
     # settings for simulation and plot
     settings = {
