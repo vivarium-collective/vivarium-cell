@@ -39,23 +39,20 @@ def control(experiments_library, out_dir=None):
     make_dir(out_dir)
 
     if args.experiment_id:
-        # retrieve preset experiment
         experiment_id = str(args.experiment_id)
-        experiment_type = experiments_library[experiment_id]
+        experiment = experiments_library[experiment_id]
 
-        if callable(experiment_type):
+        if callable(experiment):
             control_out_dir = os.path.join(out_dir, experiment_id)
             make_dir(control_out_dir)
-            experiment_type(control_out_dir)
-        elif isinstance(experiment_type, list):
-            # iterate over list with multiple experiments
-            for sub_experiment_id in experiment_type:
-                control_out_dir = os.path.join(out_dir, sub_experiment_id)
-                make_dir(control_out_dir)
-                exp = experiments_library[sub_experiment_id]
-                try:
-                    exp(control_out_dir)
-                except:
-                    print('{} experiment failed'.format(sub_experiment_id))
+            experiment(control_out_dir)
+
+        elif isinstance(experiment, dict):
+            name = experiment.get('name', experiment_id)
+            exp_function = experiment.get('function', experiment_id)
+            control_out_dir = os.path.join(out_dir, name)
+            make_dir(control_out_dir)
+            exp_function(control_out_dir)
+
     else:
         print('provide experiment number')
