@@ -18,6 +18,17 @@ from vivarium.plots.simulation_output import plot_simulation_output
 
 NAME = 'inclusion_body'
 
+def polar_partition(value, front_back):
+    """ asymmetric partitioning of inclusion body """
+    # front body goes to the front daughter
+    if 'front' in front_back:
+        inclusion_body = front_back['front']
+        return [inclusion_body, 0]
+    # back body goes to the back daughter
+    elif 'back' in front_back:
+        inclusion_body = front_back['back']
+        return [0, inclusion_body]
+
 
 class InclusionBody(Process):
     '''
@@ -44,36 +55,47 @@ class InclusionBody(Process):
         random.shuffle(front_back)
         state = {
             'global': {
-                'mass': 1339 * units.fg
-            },
-            'front': {
-                'inclusion_body': front_back[0]},
-            'back': {
-                'inclusion_body': front_back[1]}}
+                'mass': 1339 * units.fg},
+            'inclusion_body': {
+                'front': front_back[0],
+                'back': front_back[1]
+            }
+        }
         return deep_merge(state, config)
 
     def ports_schema(self):
         return {
-            'front': {
-                'inclusion_body': {
+            'inclusion_mass': {
+                'front': {
                     '_default': 0.0,
                     '_emit': True,
+                    '_divider': {
+                        'divider': polar_partition,
+                        'topology': {'front': ('front',)}},
                     '_properties': {
                         'mw': self.parameters['unit_mw']},
                 },
-            },
-            'back': {
-                'inclusion_body': {
+                'back': {
                     '_default': 0.0,
                     '_emit': True,
+                    '_divider': {
+                        'divider': polar_partition,
+                        'topology': {'back': ('back',)}},
                     '_properties': {
                         'mw': self.parameters['unit_mw']},
                 },
+                'combined': {
+                    '_default': 0.0,
+                    '_emit': True,
+                    '_updater': 'set',
+                    '_divider': 'zero',
+                }
             },
             'molecules': {
                 mol_id: {
                     '_default': 0.0,
                     '_emit': True,
+                    # '_divider': 'split',
                     '_properties': {
                         'mw': self.parameters['unit_mw']}
                 }
@@ -91,8 +113,8 @@ class InclusionBody(Process):
 
     def next_update(self, timestep, states):
         # get the states
-        front_body = states['front']['inclusion_body']
-        back_body = states['back']['inclusion_body']
+        front_body = states['inclusion_mass']['front']
+        back_body = states['inclusion_mass']['back']
         molecules = states['molecules']
         molecule_mass = sum(molecules.values())
 
@@ -120,11 +142,10 @@ class InclusionBody(Process):
         delta_back = (back_aggregation + half_growth) * timestep
 
         return {
-            'front': {
-                'inclusion_body': delta_front
-            },
-            'back': {
-                'inclusion_body':  delta_back
+            'inclusion_mass': {
+                'front': delta_front,
+                'back': delta_back,
+                'combined': front_body + back_body + delta_front + delta_back
             },
             'molecules': delta_molecules
         }

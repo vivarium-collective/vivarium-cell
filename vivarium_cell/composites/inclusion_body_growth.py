@@ -27,7 +27,7 @@ NAME = 'inclusion_body_growth'
 class InclusionBodyGrowth(Generator):
 
     defaults = {
-        'inclusion_body': {},
+        'inclusion_process': {},
         'growth': {
             'growth_rate': 0.006},  # very fast growth
         'mass': {},
@@ -46,7 +46,7 @@ class InclusionBodyGrowth(Generator):
         processes = network['processes']
         initial_state = {}
         for name, process in processes.items():
-            if name == 'inclusion_body':
+            if name == 'inclusion_process':
                 initial_state = deep_merge(initial_state, process.initial_state())
         deep_merge(initial_state, config)
         return initial_state
@@ -62,7 +62,7 @@ class InclusionBodyGrowth(Generator):
             compartment=self)
 
         return {
-            'inclusion_body': InclusionBody(config['inclusion_body']),
+            'inclusion_process': InclusionBody(config['inclusion_process']),
             'growth': GrowthProtein(config['growth']),
             'mass_deriver': TreeMass(config['mass']),
             'division': MetaDivision(division_config)
@@ -72,9 +72,8 @@ class InclusionBodyGrowth(Generator):
         boundary_path = config['boundary_path']
         agents_path = config['agents_path']
         return {
-            'inclusion_body': {
-                'front': ('front',),
-                'back': ('back',),
+            'inclusion_process': {
+                'inclusion_mass': ('inclusion_body',),
                 'molecules': ('internal',),
                 'global': boundary_path,
             },
@@ -93,7 +92,7 @@ class InclusionBodyGrowth(Generator):
 
 
 DEFAULT_CONFIG = {
-    'inclusion_body': {
+    'inclusion_process': {
         'molecules_list': ['glucose'],
         'growth_rate': 1e-1,
     }
@@ -123,9 +122,14 @@ def run_compartment(out_dir):
     plot_settings = {}
     plot_agents_multigen(output_data, plot_settings, out_dir)
 
+
 experiments_library = {
-    'inclusion_body': run_compartment,
+    '1': {
+        'name': 'inclusion_body_growth',
+        'experiment': run_compartment,
+    }
 }
+
 
 if __name__ == '__main__':
     control(

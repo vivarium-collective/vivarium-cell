@@ -23,18 +23,24 @@ from vivarium_cell.plots.multibody_physics import (
 
 def run_experiment(out_dir):
     agent_id = '1'
-    time_total = 100
+    time_total = 600
     molecules = ['glucose']
     n_snapshots = 6
     tagged_molecules = [
-        ('front', 'inclusion_body'),
-        ('back', 'inclusion_body'),
+        ('inclusion_body', 'front'),
+        ('inclusion_body', 'back'),
+        ('inclusion_body', 'combined'),
     ]
 
     # initial state
     compartment = InclusionBodyGrowth({'agent_id': agent_id})
     compartment_state = compartment.initial_state({
-        'internal': {'glucose': 1.0}})
+        'internal': {'glucose': 1.0},
+        'inclusion_body': {
+            'front': 0.9,
+            'back': 0.1,
+        }
+    })
     initial_state = {
         'agents': {
             agent_id: compartment_state}}
@@ -46,21 +52,15 @@ def run_experiment(out_dir):
 
     # declare the hierarchy
     hierarchy = {
-        'generators': [
-            {
-                'type': Lattice,
-                'config': lattice_config
-            }
-        ],
+        'generators':{
+            'type': Lattice,
+            'config': lattice_config},
         'agents': {
             agent_id: {
                 'generators': {
                     'type': InclusionBodyGrowth,
-                    'config': {'agent_id': agent_id}
-                },
-            }
-        }
-    }
+                    'config': {
+                        'agent_id': agent_id}}}}}
 
     # configure experiment
     experiment = compartment_hierarchy_experiment(
