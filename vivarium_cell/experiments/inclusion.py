@@ -23,32 +23,31 @@ from vivarium_cell.plots.multibody_physics import (
 
 def run_experiment(out_dir):
     agent_id = '1'
-    time_total = 600
+    time_total = 100
     molecules = ['glucose']
+    n_snapshots = 6
+    tagged_molecules = [
+        ('front', 'inclusion_body'),
+        ('back', 'inclusion_body'),
+    ]
 
     # initial state
+    compartment = InclusionBodyGrowth({'agent_id': agent_id})
+    compartment_state = compartment.initial_state({
+        'internal': {'glucose': 1.0}})
     initial_state = {
         'agents': {
-            agent_id: {
-                'internal': {'A': 0},
-                'external': {'A': 1},
-                'global': {
-                    'divide': False
-                }
-            },
-        }
-    }
+            agent_id: compartment_state}}
 
     lattice_config = make_lattice_config(
         molecules=molecules,
         bounds=[30, 30],
-        n_bins=[1, 1])
+        n_bins=[10, 10])
 
     # declare the hierarchy
     hierarchy = {
         'generators': [
             {
-                'name': 'lattice',
                 'type': Lattice,
                 'config': lattice_config
             }
@@ -81,24 +80,32 @@ def run_experiment(out_dir):
     multibody_config = lattice_config['multibody']
     agents = {time: time_data['agents'] for time, time_data in data.items()}
     fields = {time: time_data['fields'] for time, time_data in data.items()}
+
+    # snapshots plot
     plot_data = {
         'agents': agents,
         'fields': fields,
         'config': multibody_config,
     }
     plot_config = {
-        'out_dir': out_dir,
-        # 'filename': agent_type + '_snapshots',
-    }
+        'n_snapshots': n_snapshots,
+        'out_dir': out_dir}
     plot_snapshots(plot_data, plot_config)
 
+    # tags plot
+    plot_config = {
+        'tagged_molecules': tagged_molecules,
+        'n_snapshots': n_snapshots,
+        'convert_to_concs': False,
+        'out_dir': out_dir}
+    plot_tags(plot_data, plot_config)
 
 
 
 experiments_library = {
     '1': {
         'name': 'inclusion_lattice',
-        'function': run_experiment},
+        'experiment': run_experiment},
 }
 
 if __name__ == '__main__':

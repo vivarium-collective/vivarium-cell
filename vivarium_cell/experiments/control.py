@@ -49,7 +49,7 @@ def control(experiments_library, out_dir=None):
 
         elif isinstance(experiment, dict):
             name = experiment.get('name', experiment_id)
-            exp_function = experiment.get('function', experiment_id)
+            exp_function = experiment.get('experiment', experiment_id)
             control_out_dir = os.path.join(out_dir, name)
             make_dir(control_out_dir)
             exp_function(control_out_dir)
