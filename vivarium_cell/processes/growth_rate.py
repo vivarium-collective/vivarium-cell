@@ -1,0 +1,115 @@
+from __future__ import absolute_import, division, print_function
+
+import os
+
+import numpy as np
+
+from vivarium.library.units import units
+from vivarium.library.dict_utils import deep_merge
+from vivarium.core.process import Process
+from vivarium.core.composition import (
+    simulate_process_in_experiment,
+    PROCESS_OUT_DIR,
+)
+from vivarium.plots.simulation_output import plot_simulation_output
+
+
+NAME = 'growth_rate'
+
+
+class GrowthRate(Process):
+    """The GrowthRate :term:`process class` models exponential cell growth.
+
+    The cell's mass :math:`m_{t + h}` at time :math:`t + h` for
+    :term:`timestep` :math:`h` and with growth rate :math:`r` is modeled
+    as:
+
+    .. math::
+
+        m_{t + h} = m_t e^{rh}
+
+    Configuration Options:
+
+    * ``growth_rate``: The cell's growth rate :math:`r`. This rate is
+      0.0005 by default to approximate an expected 22.5 minutes expected doubling
+      time in LB medium: https://bionumbers.hms.harvard.edu/bionumber.aspx?s=n&v=0&id=110058
+    """
+
+    name = NAME
+    defaults = {
+        'growth_rate': 0.0005,
+    }
+
+    def __init__(self, initial_parameters=None):
+        super(GrowthRate, self).__init__(initial_parameters)
+
+    def initial_state(self, config=None):
+        if config is None:
+            config = {}
+        state = {
+            'global': {
+                'growth_rate': self.parameters['growth_rate'],
+                'mass': 1339 * units.fg,
+            }
+        }
+        state = deep_merge(state, config)
+        return state
+
+    def ports_schema(self):
+        return {
+            'global': {
+                'growth_rate': {
+                    '_default': self.parameters['growth_rate'],
+                },
+                'mass': {
+                    '_emit': True,
+                    '_default': 1.0 * units.fg,
+                    '_updater': 'set',
+                    '_divider': 'split'},
+                'volume': {
+                    '_updater': 'set',
+                    '_divider': 'split'},
+                'divide': {
+                    '_default': False,
+                    '_updater': 'set'}}}
+
+    def next_update(self, timestep, states):
+        mass = states['global']['mass']
+        growth_rate = states['global']['growth_rate']
+        new_mass = mass * np.exp(growth_rate * timestep)
+        return {
+            'global': {
+                'mass': new_mass}}
+
+
+
+
+def test_growth_rate():
+    growth_rate = GrowthRate({})
+    initial_state = growth_rate.initial_state({})
+    settings = {
+        'total_time': 1350,
+        'initial_state': initial_state
+    }
+    output = simulate_process_in_experiment(growth_rate, settings)
+
+    return output
+
+
+def run_compartment(out_dir):
+    data = test_growth_rate()
+    mass = data['global']['mass']
+    growth = mass[-1]/mass[0]
+    print('growth: {}'.format(growth))
+
+    plot_settings = {}
+    plot_simulation_output(data, plot_settings, out_dir)
+
+
+
+if __name__ == '__main__':
+    out_dir = os.path.join(PROCESS_OUT_DIR, NAME)
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+
+    run_compartment(out_dir)
