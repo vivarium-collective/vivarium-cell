@@ -15,8 +15,9 @@ from vivarium.plots.agents_multigen import plot_agents_multigen
 # processes
 from vivarium.processes.meta_division import MetaDivision
 from vivarium_cell.processes.inclusion_body import InclusionBody
-from vivarium_cell.processes.growth_protein import GrowthProtein
-from vivarium.processes.tree_mass import TreeMass
+from vivarium_cell.processes.growth_rate import GrowthRate
+from vivarium_cell.processes.divide_condition import DivideCondition
+from vivarium_cell.processes.derive_globals import DeriveGlobals
 
 from vivarium_cell.experiments.control import control
 
@@ -28,8 +29,10 @@ class InclusionBodyGrowth(Generator):
 
     defaults = {
         'inclusion_process': {},
-        'growth': {
-            'growth_rate': 0.006},  # very fast growth
+        'growth_rate': {
+            'growth_rate': 0.001},  # fast growth
+        'divide_condition': {
+            'threshold': 3000 * units.fg},
         'mass': {},
         'boundary_path': ('boundary',),
         'agents_path': ('..', '..', 'agents',),
@@ -44,10 +47,26 @@ class InclusionBodyGrowth(Generator):
         # get the processes
         network = self.generate()
         processes = network['processes']
+        topology = network['topology']
+
         initial_state = {}
         for name, process in processes.items():
-            if name == 'inclusion_process':
-                initial_state = deep_merge(initial_state, process.initial_state())
+            if name in ['inclusion_process', 'growth_rate']:
+                process_state = process.initial_state()
+
+                # replace port name with store name
+                # TODO -- find a way to build this into the generator...
+                process_topology = topology[name]
+                replace_port_id = {}
+                for port_id, state in process_state.items():
+                    store_id = process_topology[port_id][0]
+                    if port_id is not store_id:
+                        replace_port_id[port_id] = store_id
+                for port_id, store_id in replace_port_id.items():
+                    process_state[store_id] = process_state[port_id]
+                    del process_state[port_id]
+
+                initial_state = deep_merge(initial_state, process_state)
         deep_merge(initial_state, config)
         return initial_state
 
@@ -63,8 +82,9 @@ class InclusionBodyGrowth(Generator):
 
         return {
             'inclusion_process': InclusionBody(config['inclusion_process']),
-            'growth': GrowthProtein(config['growth']),
-            'mass_deriver': TreeMass(config['mass']),
+            'growth_rate': GrowthRate(config['growth_rate']),
+            'globals_deriver': DeriveGlobals({}),
+            'divide_condition': DivideCondition(config['divide_condition']),
             'division': MetaDivision(division_config)
         }
 
@@ -77,12 +97,15 @@ class InclusionBodyGrowth(Generator):
                 'molecules': ('internal',),
                 'global': boundary_path,
             },
-            'growth': {
-                'internal': ('internal',),
+            'growth_rate': {
                 'global': boundary_path
             },
-            'mass_deriver': {
+            'globals_deriver': {
                 'global': boundary_path
+            },
+            'divide_condition': {
+                'variable': boundary_path + ('mass',),
+                'divide': boundary_path + ('divide',),
             },
             'division': {
                 'global': boundary_path,
@@ -98,7 +121,7 @@ DEFAULT_CONFIG = {
     }
 }
 
-def test_inclusion_body():
+def test_inclusion_body(total_time=1000):
     agent_id = '0'
     parameters = copy.deepcopy(DEFAULT_CONFIG)
     parameters['agent_id'] = agent_id
@@ -114,11 +137,12 @@ def test_inclusion_body():
         'outer_path': ('agents', agent_id),
         'return_raw_data': True,
         'timestep': 1,
-        'total_time': 600}
+        'total_time': total_time}
     return simulate_compartment_in_experiment(compartment, settings)
 
 def run_compartment(out_dir):
-    output_data = test_inclusion_body()
+    output_data = test_inclusion_body(
+        total_time=4000)
     plot_settings = {}
     plot_agents_multigen(output_data, plot_settings, out_dir)
 

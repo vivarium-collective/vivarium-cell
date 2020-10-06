@@ -23,7 +23,7 @@ from vivarium_cell.plots.multibody_physics import (
 
 def run_experiment(out_dir):
     agent_id = '1'
-    time_total = 600
+    time_total = 2000
     molecules = ['glucose']
     n_snapshots = 6
     tagged_molecules = [
@@ -32,10 +32,17 @@ def run_experiment(out_dir):
         ('inclusion_body', 'combined'),
     ]
 
+    inclusion_config = {
+        'agent_id': agent_id,
+        'inclusion_process': {
+            'molecules_list': molecules}
+    }
+
     # initial state
-    compartment = InclusionBodyGrowth({'agent_id': agent_id})
+    compartment = InclusionBodyGrowth(inclusion_config)
     compartment_state = compartment.initial_state({
-        'internal': {'glucose': 1.0},
+        'internal': {
+            'glucose': 1.0},
         'inclusion_body': {
             'front': 0.9,
             'back': 0.1,
@@ -46,7 +53,7 @@ def run_experiment(out_dir):
             agent_id: compartment_state}}
 
     lattice_config = make_lattice_config(
-        molecules=molecules,
+        jitter_force=1e-4,
         bounds=[30, 30],
         n_bins=[10, 10])
 
@@ -59,8 +66,7 @@ def run_experiment(out_dir):
             agent_id: {
                 'generators': {
                     'type': InclusionBodyGrowth,
-                    'config': {
-                        'agent_id': agent_id}}}}}
+                    'config': inclusion_config}}}}
 
     # configure experiment
     experiment = compartment_hierarchy_experiment(
@@ -79,12 +85,10 @@ def run_experiment(out_dir):
     # extract data for snapshots
     multibody_config = lattice_config['multibody']
     agents = {time: time_data['agents'] for time, time_data in data.items()}
-    fields = {time: time_data['fields'] for time, time_data in data.items()}
 
     # snapshots plot
     plot_data = {
         'agents': agents,
-        'fields': fields,
         'config': multibody_config,
     }
     plot_config = {

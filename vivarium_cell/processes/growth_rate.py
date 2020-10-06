@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import os
 
 import numpy as np
+from scipy import constants
 
 from vivarium.library.units import units
 from vivarium.library.dict_utils import deep_merge
@@ -15,6 +16,7 @@ from vivarium.plots.simulation_output import plot_simulation_output
 
 
 NAME = 'growth_rate'
+AVOGADRO = constants.N_A
 
 
 class GrowthRate(Process):
@@ -38,6 +40,9 @@ class GrowthRate(Process):
     name = NAME
     defaults = {
         'growth_rate': 0.0005,
+        'biomass_mw': AVOGADRO * units.fg / units.mol,
+        'global_deriver_key': 'globals_deriver',
+        'mass_deriver_key': 'mass_deriver',
     }
 
     def __init__(self, initial_parameters=None):
@@ -49,7 +54,7 @@ class GrowthRate(Process):
         state = {
             'global': {
                 'growth_rate': self.parameters['growth_rate'],
-                'mass': 1339 * units.fg,
+                'biomass': 1339,
             }
         }
         state = deep_merge(state, config)
@@ -61,25 +66,34 @@ class GrowthRate(Process):
                 'growth_rate': {
                     '_default': self.parameters['growth_rate'],
                 },
-                'mass': {
-                    '_emit': True,
-                    '_default': 1.0 * units.fg,
+                'biomass': {
+                    # '_emit': True,
+                    '_default': 1.0,
                     '_updater': 'set',
-                    '_divider': 'split'},
-                'volume': {
-                    '_updater': 'set',
-                    '_divider': 'split'},
+                    '_divider': 'split',
+                    '_properties': {
+                        'mw': self.parameters['biomass_mw']}
+                    },
                 'divide': {
                     '_default': False,
                     '_updater': 'set'}}}
 
+    def derivers(self):
+        return {
+            self.parameters['mass_deriver_key']: {
+                'deriver': 'mass_deriver',
+                'port_mapping': {
+                    'global': 'global'},
+                'config': {}},
+        }
+
     def next_update(self, timestep, states):
-        mass = states['global']['mass']
+        biomass = states['global']['biomass']
         growth_rate = states['global']['growth_rate']
-        new_mass = mass * np.exp(growth_rate * timestep)
+        new_mass = biomass * np.exp(growth_rate * timestep)
         return {
             'global': {
-                'mass': new_mass}}
+                'biomass': new_mass}}
 
 
 

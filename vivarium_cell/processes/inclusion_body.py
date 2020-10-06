@@ -23,11 +23,11 @@ def polar_partition(value, front_back):
     # front body goes to the front daughter
     if 'front' in front_back:
         inclusion_body = front_back['front']
-        return [inclusion_body, 0]
+        return [inclusion_body, 0.0]
     # back body goes to the back daughter
     elif 'back' in front_back:
         inclusion_body = front_back['back']
-        return [0, inclusion_body]
+        return [0.0, inclusion_body]
 
 
 class InclusionBody(Process):
@@ -56,7 +56,7 @@ class InclusionBody(Process):
         state = {
             'global': {
                 'mass': 1339 * units.fg},
-            'inclusion_body': {
+            'inclusion_mass': {
                 'front': front_back[0],
                 'back': front_back[1]
             }
@@ -129,17 +129,18 @@ class InclusionBody(Process):
             back_aggregation = total_body
 
         if molecule_mass > 0:
-            total_growth = self.absorption * molecule_mass
-            half_growth = total_growth / 2
+            # proportionate absorption
+            total_absorption = self.absorption * molecule_mass
+            pole_absorption = total_absorption / 2
             delta_molecules = {
-                mol_id: - self.absorption * mass / molecule_mass
+                mol_id: - total_absorption * mass / molecule_mass
                 for mol_id, mass in molecules.items()}
         else:
-            half_growth = molecule_mass
+            pole_absorption = molecule_mass
             delta_molecules = {}
 
-        delta_front = (front_aggregation + half_growth) * timestep
-        delta_back = (back_aggregation + half_growth) * timestep
+        delta_front = (front_aggregation + pole_absorption) * timestep
+        delta_back = (back_aggregation + pole_absorption) * timestep
 
         return {
             'inclusion_mass': {
