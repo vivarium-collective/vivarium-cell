@@ -52,9 +52,11 @@ class GrowthRate(Process):
         if config is None:
             config = {}
         state = {
+            'molecules': {
+                'biomass': 1339
+            },
             'global': {
                 'growth_rate': self.parameters['growth_rate'],
-                'biomass': 1339,
             }
         }
         state = deep_merge(state, config)
@@ -62,21 +64,23 @@ class GrowthRate(Process):
 
     def ports_schema(self):
         return {
-            'global': {
-                'growth_rate': {
-                    '_default': self.parameters['growth_rate'],
-                },
+            'molecules': {
                 'biomass': {
-                    # '_emit': True,
+                    '_emit': True,
                     '_default': 1.0,
                     '_updater': 'set',
                     '_divider': 'split',
                     '_properties': {
-                        'mw': self.parameters['biomass_mw']}
-                    },
-                'divide': {
-                    '_default': False,
-                    '_updater': 'set'}}}
+                        'mw': self.parameters['biomass_mw']
+                    }
+                }
+            },
+            'global': {
+                'growth_rate': {
+                    '_default': self.parameters['growth_rate']
+                }
+            }
+        }
 
     def derivers(self):
         return {
@@ -84,16 +88,19 @@ class GrowthRate(Process):
                 'deriver': 'mass_deriver',
                 'port_mapping': {
                     'global': 'global'},
-                'config': {}},
+                'config': {}
+            }
         }
 
     def next_update(self, timestep, states):
-        biomass = states['global']['biomass']
+        biomass = states['molecules']['biomass']
         growth_rate = states['global']['growth_rate']
         new_mass = biomass * np.exp(growth_rate * timestep)
         return {
-            'global': {
-                'biomass': new_mass}}
+            'molecules': {
+                'biomass': new_mass
+            }
+        }
 
 
 

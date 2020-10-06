@@ -23,8 +23,7 @@ from vivarium_cell.plots.multibody_physics import (
 
 def run_experiment(out_dir):
     agent_id = '1'
-    time_total = 2000
-    molecules = ['glucose']
+    time_total = 4000
     n_snapshots = 6
     tagged_molecules = [
         ('inclusion_body', 'front'),
@@ -33,21 +32,15 @@ def run_experiment(out_dir):
     ]
 
     inclusion_config = {
-        'agent_id': agent_id,
-        'inclusion_process': {
-            'molecules_list': molecules}
-    }
+        'agent_id': agent_id}
 
     # initial state
     compartment = InclusionBodyGrowth(inclusion_config)
     compartment_state = compartment.initial_state({
-        'internal': {
-            'glucose': 1.0},
         'inclusion_body': {
             'front': 0.9,
             'back': 0.1,
-        }
-    })
+        }})
     initial_state = {
         'agents': {
             agent_id: compartment_state}}

@@ -38,15 +38,14 @@ class InclusionBody(Process):
     # declare default parameters as class variables
     defaults = {
         'aggregation': 1e-1,
-        'absorption': 1e-3,
+        'damage_rate': 1e-6,
         'unit_mw': 2.09e4 * units.g / units.mol,
-        'molecules_list': [],
     }
 
     def __init__(self, initial_parameters=None):
         super(InclusionBody, self).__init__(initial_parameters)
         self.aggregation = self.parameters['aggregation']
-        self.absorption = self.parameters['absorption']
+        self.damage_rate = self.parameters['damage_rate']
 
     def initial_state(self, config=None):
         if config is None:
@@ -54,8 +53,6 @@ class InclusionBody(Process):
         front_back = [0.0, 1.0]
         random.shuffle(front_back)
         state = {
-            'global': {
-                'mass': 1339 * units.fg},
             'inclusion_mass': {
                 'front': front_back[0],
                 'back': front_back[1]
@@ -92,23 +89,11 @@ class InclusionBody(Process):
                 }
             },
             'molecules': {
-                mol_id: {
+                '*': {
                     '_default': 0.0,
                     '_emit': True,
-                    # '_divider': 'split',
-                    '_properties': {
-                        'mw': self.parameters['unit_mw']}
                 }
-                for mol_id in self.parameters['molecules_list']
             },
-            'global': {
-                'mass': {
-                    '_emit': True,
-                    '_default': 0.0 * units.fg,
-                    '_updater': 'set',
-                    '_divider': 'split'
-                },
-            }
         }
 
     def next_update(self, timestep, states):
@@ -129,18 +114,18 @@ class InclusionBody(Process):
             back_aggregation = total_body
 
         if molecule_mass > 0:
-            # proportionate absorption
-            total_absorption = self.absorption * molecule_mass
-            pole_absorption = total_absorption / 2
+            # proportionate damage
+            total_damage = self.damage_rate * molecule_mass
+            pole_damage = total_damage / 2
             delta_molecules = {
-                mol_id: - total_absorption * mass / molecule_mass
+                mol_id: - total_damage * mass / molecule_mass
                 for mol_id, mass in molecules.items()}
         else:
-            pole_absorption = molecule_mass
+            pole_damage = molecule_mass
             delta_molecules = {}
 
-        delta_front = (front_aggregation + pole_absorption) * timestep
-        delta_back = (back_aggregation + pole_absorption) * timestep
+        delta_front = (front_aggregation + pole_damage) * timestep
+        delta_back = (back_aggregation + pole_damage) * timestep
 
         return {
             'inclusion_mass': {
@@ -156,16 +141,13 @@ class InclusionBody(Process):
 def run_inclusion_body(out_dir='out'):
 
     # initialize the process by passing initial_parameters
-    initial_parameters = {
-        'molecules_list': ['glucose'],
-        'growth_rate': 1e-1,
-    }
+    initial_parameters = {'growth_rate': 1e-1}
     inclusion_body_process = InclusionBody(initial_parameters)
 
     # get initial state
     initial_state = inclusion_body_process.initial_state({
         'molecules': {
-            'glucose': 1.0}})
+            'biomass': 1.0}})
 
     # run the simulation
     sim_settings = {

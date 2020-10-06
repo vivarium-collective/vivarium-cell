@@ -94,10 +94,10 @@ class InclusionBodyGrowth(Generator):
         return {
             'inclusion_process': {
                 'inclusion_mass': ('inclusion_body',),
-                'molecules': ('internal',),
-                'global': boundary_path,
+                'molecules': ('molecules',),
             },
             'growth_rate': {
+                'molecules': ('molecules',),
                 'global': boundary_path
             },
             'globals_deriver': {
@@ -114,22 +114,17 @@ class InclusionBodyGrowth(Generator):
         }
 
 
-DEFAULT_CONFIG = {
-    'inclusion_process': {
-        'molecules_list': ['glucose'],
-        'growth_rate': 1e-1,
-    }
-}
-
 def test_inclusion_body(total_time=1000):
     agent_id = '0'
-    parameters = copy.deepcopy(DEFAULT_CONFIG)
-    parameters['agent_id'] = agent_id
+    parameters = {
+        'agent_id': agent_id,
+        'inclusion_process': {
+            'growth_rate': 1e-1  # very fast growth
+        }
+    }
     compartment = InclusionBodyGrowth(parameters)
 
-    initial_state = compartment.initial_state({
-        'internal': {
-            'glucose': 1.0}})
+    initial_state = compartment.initial_state()
 
     # settings for simulation and plot
     settings = {
