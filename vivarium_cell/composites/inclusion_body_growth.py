@@ -28,7 +28,9 @@ NAME = 'inclusion_body_growth'
 class InclusionBodyGrowth(Generator):
 
     defaults = {
-        'inclusion_process': {},
+        'inclusion_process': {
+            'damage_rate': 1e-2,  # rapid damage
+        },
         'growth_rate': {
             'growth_rate': 0.001},  # fast growth
         'divide_condition': {
@@ -36,7 +38,14 @@ class InclusionBodyGrowth(Generator):
         'mass': {},
         'boundary_path': ('boundary',),
         'agents_path': ('..', '..', 'agents',),
-        'daughter_path': tuple()}
+        'daughter_path': tuple(),
+        'initial_state_config': {
+            'inclusion_process': {
+                'initial_mass': 10},
+            'growth_rate': {
+                'initial_mass': 1200},
+        }
+    }
 
     def __init__(self, config):
         super(InclusionBodyGrowth, self).__init__(config)
@@ -44,6 +53,9 @@ class InclusionBodyGrowth(Generator):
     def initial_state(self, config=None):
         if config is None:
             config = {}
+        initial_state_config = self.config['initial_state_config']
+        config = deep_merge(config, initial_state_config)
+
         # get the processes
         network = self.generate()
         processes = network['processes']
@@ -52,7 +64,7 @@ class InclusionBodyGrowth(Generator):
         initial_state = {}
         for name, process in processes.items():
             if name in ['inclusion_process', 'growth_rate']:
-                process_state = process.initial_state()
+                process_state = process.initial_state(config.get(name, {}))
 
                 # replace port name with store name
                 # TODO -- find a way to build this into the generator...
@@ -65,9 +77,8 @@ class InclusionBodyGrowth(Generator):
                 for port_id, store_id in replace_port_id.items():
                     process_state[store_id] = process_state[port_id]
                     del process_state[port_id]
-
                 initial_state = deep_merge(initial_state, process_state)
-        deep_merge(initial_state, config)
+
         return initial_state
 
     def generate_processes(self, config):

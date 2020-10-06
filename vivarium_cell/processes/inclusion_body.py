@@ -50,15 +50,15 @@ class InclusionBody(Process):
     def initial_state(self, config=None):
         if config is None:
             config = {}
-        front_back = [0.0, 1.0]
+        initial_mass = config.get('initial_mass', 0.0)
+        front_back = [0.0, initial_mass]
         random.shuffle(front_back)
-        state = {
+        return {
             'inclusion_mass': {
                 'front': front_back[0],
                 'back': front_back[1]
             }
         }
-        return deep_merge(state, config)
 
     def ports_schema(self):
         return {

@@ -51,16 +51,16 @@ class GrowthRate(Process):
     def initial_state(self, config=None):
         if config is None:
             config = {}
-        state = {
+        initial_mass = config.get(
+            'initial_mass', 1339)
+        return {
             'molecules': {
-                'biomass': 1339
+                'biomass': initial_mass
             },
             'global': {
                 'growth_rate': self.parameters['growth_rate'],
             }
         }
-        state = deep_merge(state, config)
-        return state
 
     def ports_schema(self):
         return {
