@@ -6,7 +6,7 @@ Inclusion Body Experiments
 
 from vivarium.core.control import Control
 from vivarium.core.composition import (
-    compartment_hierarchy_experiment,
+    compose_experiment,
     GENERATORS_KEY,
     EXPERIMENT_OUT_DIR,
 )
@@ -75,7 +75,7 @@ def run_experiment():
                     'config': inclusion_config}}}}
 
     # configure experiment
-    experiment = compartment_hierarchy_experiment(
+    experiment = compose_experiment(
         hierarchy=hierarchy,
         initial_state=initial_state)
 
@@ -145,4 +145,4 @@ if __name__ == '__main__':
         experiments=experiments_library,
         plots=plots_library,
         workflows=workflow_library,
-        out_dir=EXPERIMENT_OUT_DIR)
+        )
