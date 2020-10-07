@@ -24,7 +24,14 @@ DEFAULT_BOUNDS = [10, 10]
 PI = math.pi
 
 # colors for phylogeny initial agents
-HUES = [hue/360 for hue in np.linspace(0,360,30)]
+HUES_RANGE = [[0, 210], [270, 330]]  # skip blues (210-270), they do not show up well
+HUE_INCREMENT = 30
+HUES = [
+    hue/360
+    for hue in np.concatenate([
+        np.linspace(hr[0], hr[1], int((hr[1]-hr[0])/HUE_INCREMENT)+1)
+        for hr in HUES_RANGE])
+    ]
 DEFAULT_HUE = HUES[0]
 DEFAULT_SV = [100.0/100.0, 70.0/100.0]
 BASELINE_TAG_COLOR = [220/360, 1.0, 0.2]  # HSV

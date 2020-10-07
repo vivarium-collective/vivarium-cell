@@ -24,14 +24,14 @@ AVOGADRO = constants.N_A
 
 def polar_partition(value, front_back):
     """ asymmetric partitioning of inclusion body """
-    # front body goes to the front daughter
+    # front aggregate goes to the front daughter
     if 'front' in front_back:
-        inclusion_body = front_back['front']
-        return [inclusion_body, 0.0]
-    # back body goes to the back daughter
+        aggregate = front_back['front']
+        return [aggregate, 0.0]
+    # back aggregate goes to the back daughter
     elif 'back' in front_back:
-        inclusion_body = front_back['back']
-        return [0.0, inclusion_body]
+        aggregate = front_back['back']
+        return [0.0, aggregate]
 
 
 class InclusionBody(Process):
@@ -44,6 +44,7 @@ class InclusionBody(Process):
     one daughter and the inclusion body on the back pole to another.
     '''
 
+    name = NAME
     defaults = {
         'aggregation_rate': 1e-1,
         'damage_rate': 1e-6,
@@ -108,26 +109,29 @@ class InclusionBody(Process):
         }
 
     def next_update(self, timestep, states):
+
         # get the states
         front_aggregate = states['front']['aggregate']
         back_aggregate = states['back']['aggregate']
         molecules = states['molecules']
         molecule_mass = sum(molecules.values())
 
-        # aggregate existing damage at front or back
+        # existing damage aggregate at front or back, pulled towards pole with larger body
         total_aggregate = front_aggregate + back_aggregate
         if total_aggregate > 0:
             front_ratio = front_aggregate / total_aggregate
             back_ratio = back_aggregate / total_aggregate
-            front_aggregation = self.aggregation_rate * front_ratio * back_aggregate * (front_ratio - back_ratio)
-            back_aggregation = self.aggregation_rate * back_ratio * front_aggregate * (back_ratio - front_ratio)
+            front_aggregation = self.aggregation_rate * \
+                                front_ratio * back_aggregate * (front_ratio - back_ratio)
+            back_aggregation = self.aggregation_rate * \
+                               back_ratio * front_aggregate * (back_ratio - front_ratio)
         else:
             front_aggregation = total_aggregate
             back_aggregation = total_aggregate
 
         # proportionate damage to all molecules
         if molecule_mass > 0:
-            total_damage = self.damage_rate * molecule_mass
+            total_damage = self.damage_rate * molecule_mass * timestep
             polar_damage = total_damage / 2
             delta_molecules = {
                 mol_id: - total_damage * mass / molecule_mass
@@ -136,7 +140,7 @@ class InclusionBody(Process):
             polar_damage = molecule_mass
             delta_molecules = {}
 
-        # get change to front and back aggregates
+        # get total change to front and back aggregates
         delta_front = (front_aggregation + polar_damage) * timestep
         delta_back = (back_aggregation + polar_damage) * timestep
 
@@ -146,7 +150,8 @@ class InclusionBody(Process):
             'back': {
                 'aggregate': delta_back},
             'inclusion_body': (front_aggregate + back_aggregate + delta_front + delta_back),
-            'molecules': delta_molecules}
+            'molecules': delta_molecules,
+        }
 
 
 # functions to configure and run the process

@@ -14,6 +14,7 @@ from vivarium.core.composition import (
     COMPOSITE_OUT_DIR,
 )
 from vivarium.plots.agents_multigen import plot_agents_multigen
+from vivarium.plots.topology import plot_compartment_topology
 
 # processes
 from vivarium.processes.meta_division import MetaDivision
@@ -30,10 +31,8 @@ NAME = 'inclusion_body_growth'
 class InclusionBodyGrowth(Generator):
 
     defaults = {
-        'inclusion_process': {
-            'damage_rate': 1e-5},
-        'growth_rate': {
-            'growth_rate': 0.001},  # fast growth
+        'inclusion_process': {},
+        'growth_rate': {},
         'divide_condition': {
             'threshold': 3000 * units.fg},
         'mass': {},
@@ -48,37 +47,6 @@ class InclusionBodyGrowth(Generator):
 
     def __init__(self, config):
         super(InclusionBodyGrowth, self).__init__(config)
-
-    def initial_state(self, config=None):
-        if config is None:
-            config = {}
-        initial_state_config = self.config['initial_state_config']
-        config = deep_merge(config, initial_state_config)
-
-        # get the processes
-        network = self.generate()
-        processes = network['processes']
-        topology = network['topology']
-
-        initial_state = {}
-        for name, process in processes.items():
-            if name in ['inclusion_process', 'growth_rate']:
-                process_state = process.initial_state(config.get(name, {}))
-
-                # replace port name with store name
-                # TODO -- find a way to build this into the generator...
-                process_topology = topology[name]
-                replace_port_id = {}
-                for port_id, state in process_state.items():
-                    store_id = process_topology[port_id][0]
-                    if port_id is not store_id:
-                        replace_port_id[port_id] = store_id
-                for port_id, store_id in replace_port_id.items():
-                    process_state[store_id] = process_state[port_id]
-                    del process_state[port_id]
-                initial_state = deep_merge(initial_state, process_state)
-
-        return initial_state
 
     def generate_processes(self, config):
         # division config
@@ -126,13 +94,49 @@ class InclusionBodyGrowth(Generator):
         }
 
 
+    def initial_state(self, config=None):
+        # TODO -- find a way to build this into the generator...
+
+        if config is None:
+            config = {}
+        initial_state_config = self.config['initial_state_config']
+        config = deep_merge(config, initial_state_config)
+
+        # get the processes
+        network = self.generate()
+        processes = network['processes']
+        topology = network['topology']
+
+        initial_state = {}
+        for name, process in processes.items():
+            if name in ['inclusion_process', 'growth_rate']:
+                process_state = process.initial_state(config.get(name, {}))
+
+                # replace port name with store name
+                process_topology = topology[name]
+                replace_port_id = {}
+                for port_id, state in process_state.items():
+                    store_id = process_topology[port_id][0]
+                    if port_id is not store_id:
+                        replace_port_id[port_id] = store_id
+                for port_id, store_id in replace_port_id.items():
+                    process_state[store_id] = process_state[port_id]
+                    del process_state[port_id]
+                initial_state = deep_merge(initial_state, process_state)
+
+        return initial_state
+
+
 def test_inclusion_body(total_time=1000):
     agent_id = '0'
     parameters = {
         'agent_id': agent_id,
         'inclusion_process': {
-            'growth_rate': 1e-1  # very fast growth
-        }
+            'damage_rate': 1e-4,  # rapid damage
+        },
+        'growth_rate': {
+            'growth_rate': 0.001  # fast growth
+        },
     }
     compartment = InclusionBodyGrowth(parameters)
 
@@ -152,9 +156,17 @@ def run_compartment(out_dir='out'):
     plot_settings = {}
     plot_agents_multigen(data, plot_settings, out_dir)
 
+def plot_inclusion_topology(out_dir='out'):
+    # make a topology network plot
+    plot_compartment_topology(
+        compartment=InclusionBodyGrowth({'agent_id': '1'}),
+        settings={},
+        out_dir=out_dir)
+
 
 if __name__ == '__main__':
     out_dir = os.path.join(COMPOSITE_OUT_DIR, NAME)
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
+    plot_inclusion_topology(out_dir=out_dir)
     run_compartment(out_dir=out_dir)

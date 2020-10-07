@@ -26,8 +26,14 @@ from vivarium_cell.plots.multibody_physics import (
 )
 
 
-def experiment_config():
-    pass
+# def get_experiment_config_1():
+#     lattice_config = make_lattice_config(
+#         jitter_force=1e-4,
+#         bounds=[30, 30],
+#         n_bins=[10, 10])
+#     return {
+#         'lattice_config': lattice_config
+#     }
 
 lattice_config = make_lattice_config(
     jitter_force=1e-4,
@@ -36,33 +42,30 @@ lattice_config = make_lattice_config(
 
 
 
-def run_experiment():
+def run_experiment(config={}):
     agent_id = '1'
-    time_total = 5000
+    time_total = 12000
 
     inclusion_config = {
-        'agent_id': agent_id}
+        'agent_id': agent_id,
+        'damage_rate': 5e-5,
+    }
 
     # initial state
     compartment = InclusionBodyGrowth(inclusion_config)
     compartment_state = compartment.initial_state({
         'front': {
-            'aggregate': 0.9},
+            'aggregate': 200},
         'back': {
-            'aggregate': 0.1}
+            'aggregate': 10}
         })
     initial_state = {
         'agents': {
             agent_id: compartment_state}}
 
-    # lattice_config = make_lattice_config(
-    #     jitter_force=1e-4,
-    #     bounds=[30, 30],
-    #     n_bins=[10, 10])
-
     # declare the hierarchy
     hierarchy = {
-        GENERATORS_KEY:{
+        GENERATORS_KEY: {
             'type': Lattice,
             'config': lattice_config},
         'agents': {
@@ -88,6 +91,8 @@ def inclusion_plots_suite(data=None, out_dir=EXPERIMENT_OUT_DIR):
     n_snapshots = 8
     tagged_molecules = [
         ('inclusion_body',),
+        # ('front', 'aggregate',),
+        # ('back', 'aggregate',),
     ]
 
     # multigen plot
