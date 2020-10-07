@@ -3,8 +3,11 @@
 Inclusion body process
 ======================
 """
+
 import os
 import random
+
+from scipy import constants
 
 from vivarium.library.units import units
 from vivarium.core.process import Process
@@ -12,11 +15,12 @@ from vivarium.core.composition import (
     simulate_process_in_experiment,
     PROCESS_OUT_DIR,
 )
-from vivarium.library.dict_utils import deep_merge
 from vivarium.plots.simulation_output import plot_simulation_output
 
 
 NAME = 'inclusion_body'
+AVOGADRO = constants.N_A
+
 
 def polar_partition(value, front_back):
     """ asymmetric partitioning of inclusion body """
@@ -43,7 +47,7 @@ class InclusionBody(Process):
     defaults = {
         'aggregation_rate': 1e-1,
         'damage_rate': 1e-6,
-        'unit_mw': 2.09e4 * units.g / units.mol,
+        'unit_mw': AVOGADRO * units.fg / units.mol,
     }
 
     def __init__(self, initial_parameters=None):
@@ -99,7 +103,6 @@ class InclusionBody(Process):
             'molecules': {
                 '*': {
                     '_default': 0.0,
-                    '_emit': True,
                 }
             },
         }
@@ -143,8 +146,7 @@ class InclusionBody(Process):
             'back': {
                 'aggregate': delta_back},
             'inclusion_body': (front_aggregate + back_aggregate + delta_front + delta_back),
-            'molecules': delta_molecules
-        }
+            'molecules': delta_molecules}
 
 
 # functions to configure and run the process

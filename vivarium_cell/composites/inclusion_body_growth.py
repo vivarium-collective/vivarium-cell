@@ -1,7 +1,10 @@
-from __future__ import absolute_import, division, print_function
+"""
+========================
+Inclusion body composite
+========================
+"""
 
 import os
-import copy
 
 from vivarium.library.units import units
 from vivarium.library.dict_utils import deep_merge
@@ -28,8 +31,7 @@ class InclusionBodyGrowth(Generator):
 
     defaults = {
         'inclusion_process': {
-            'damage_rate': 1e-2,  # rapid damage
-        },
+            'damage_rate': 1e-5},
         'growth_rate': {
             'growth_rate': 0.001},  # fast growth
         'divide_condition': {
@@ -42,9 +44,7 @@ class InclusionBodyGrowth(Generator):
             'inclusion_process': {
                 'initial_mass': 10},
             'growth_rate': {
-                'initial_mass': 1200},
-        }
-    }
+                'initial_mass': 1200}}}
 
     def __init__(self, config):
         super(InclusionBodyGrowth, self).__init__(config)

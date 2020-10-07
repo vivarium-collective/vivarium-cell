@@ -1,4 +1,8 @@
-from __future__ import absolute_import, division, print_function
+"""
+===================
+Growth rate process
+===================
+"""
 
 import os
 
@@ -6,7 +10,6 @@ import numpy as np
 from scipy import constants
 
 from vivarium.library.units import units
-from vivarium.library.dict_utils import deep_merge
 from vivarium.core.process import Process
 from vivarium.core.composition import (
     simulate_process_in_experiment,

@@ -1,6 +1,6 @@
 """
 ==========================
-Inclusion Body Experiments
+Inclusion body experiments
 ==========================
 """
 
@@ -41,11 +41,7 @@ def run_experiment():
     time_total = 5000
 
     inclusion_config = {
-        'agent_id': agent_id,
-        'inclusion_process': {
-            'damage_rate': 1e-3,
-        }
-    }
+        'agent_id': agent_id}
 
     # initial state
     compartment = InclusionBodyGrowth(inclusion_config)
@@ -89,7 +85,7 @@ def run_experiment():
 
 
 def inclusion_plots_suite(data=None, out_dir=EXPERIMENT_OUT_DIR):
-    n_snapshots = 6
+    n_snapshots = 8
     tagged_molecules = [
         ('inclusion_body',),
     ]
