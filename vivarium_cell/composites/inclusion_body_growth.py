@@ -8,9 +8,8 @@ from vivarium.library.dict_utils import deep_merge
 from vivarium.core.process import Generator
 from vivarium.core.composition import (
     simulate_compartment_in_experiment,
-    COMPARTMENT_OUT_DIR,
+    COMPOSITE_OUT_DIR,
 )
-from vivarium.core.control import Control
 from vivarium.plots.agents_multigen import plot_agents_multigen
 
 # processes
@@ -104,7 +103,9 @@ class InclusionBodyGrowth(Generator):
         agents_path = config['agents_path']
         return {
             'inclusion_process': {
-                'inclusion_mass': ('inclusion_body',),
+                'front': ('front',),
+                'back': ('front',),
+                'inclusion_body': ('inclusion_body',),
                 'molecules': ('molecules',),
             },
             'growth_rate': {
@@ -146,22 +147,14 @@ def test_inclusion_body(total_time=1000):
         'total_time': total_time}
     return simulate_compartment_in_experiment(compartment, settings)
 
-def run_compartment(out_dir=COMPARTMENT_OUT_DIR):
-    output_data = test_inclusion_body(
-        total_time=4000)
+def run_compartment(out_dir='out'):
+    data = test_inclusion_body(total_time=4000)
     plot_settings = {}
-    plot_agents_multigen(output_data, plot_settings, out_dir)
-
-
-experiments_library = {
-    '1': {
-        'name': 'inclusion_body_growth',
-        'experiment': run_compartment,
-    }
-}
+    plot_agents_multigen(data, plot_settings, out_dir)
 
 
 if __name__ == '__main__':
-    Control(
-        experiments=experiments_library,
-        out_dir=COMPARTMENT_OUT_DIR)
+    out_dir = os.path.join(COMPOSITE_OUT_DIR, NAME)
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+    run_compartment(out_dir=out_dir)

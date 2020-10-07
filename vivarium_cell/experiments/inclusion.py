@@ -38,7 +38,7 @@ lattice_config = make_lattice_config(
 
 def run_experiment():
     agent_id = '1'
-    time_total = 50 #00
+    time_total = 5000
 
     inclusion_config = {
         'agent_id': agent_id,
@@ -90,9 +90,7 @@ def run_experiment():
 def inclusion_plots_suite(data=None, out_dir=EXPERIMENT_OUT_DIR):
     n_snapshots = 6
     tagged_molecules = [
-        ('inclusion_body', 'front'),
-        ('inclusion_body', 'back'),
-        ('inclusion_body', 'combined'),
+        ('inclusion_body',),
     ]
 
     # multigen plot

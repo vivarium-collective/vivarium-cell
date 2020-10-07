@@ -31,20 +31,24 @@ def polar_partition(value, front_back):
 
 
 class InclusionBody(Process):
-    '''
-    This mock process provides a basic template that can be used for a new process
+    ''' Inclusion Body Process
+
+    Simulates the conversion of biomass into cell damage in inclusion bodies.
+    The damage builds up in the front and back poles, with a bistable switch
+    that makes the damage aggregate in one pole or the other. Upon division,
+    a polar_partition _divider pulls the inclusion body on the front pole into
+    one daughter and the inclusion body on the back pole to another.
     '''
 
-    # declare default parameters as class variables
     defaults = {
-        'aggregation': 1e-1,
+        'aggregation_rate': 1e-1,
         'damage_rate': 1e-6,
         'unit_mw': 2.09e4 * units.g / units.mol,
     }
 
     def __init__(self, initial_parameters=None):
         super(InclusionBody, self).__init__(initial_parameters)
-        self.aggregation = self.parameters['aggregation']
+        self.aggregation_rate = self.parameters['aggregation_rate']
         self.damage_rate = self.parameters['damage_rate']
 
     def initial_state(self, config=None):
@@ -53,40 +57,44 @@ class InclusionBody(Process):
         initial_mass = config.get('initial_mass', 0.0)
         front_back = [0.0, initial_mass]
         random.shuffle(front_back)
-        return {
-            'inclusion_mass': {
-                'front': front_back[0],
-                'back': front_back[1]
-            }
-        }
+        state = {
+            'front': {'aggregate': front_back[0]},
+            'back': {'aggregate': front_back[1]}}
+        if 'molecules' in config:
+            state['molecules'] = config['molecules']
+        return state
 
     def ports_schema(self):
         return {
-            'inclusion_mass': {
-                'front': {
+            'front': {
+                'aggregate': {
                     '_default': 0.0,
                     '_emit': True,
                     '_divider': {
                         'divider': polar_partition,
-                        'topology': {'front': ('front',)}},
+                        'topology': {'front': ('aggregate',)}},
                     '_properties': {
-                        'mw': self.parameters['unit_mw']},
-                },
-                'back': {
-                    '_default': 0.0,
-                    '_emit': True,
-                    '_divider': {
-                        'divider': polar_partition,
-                        'topology': {'back': ('back',)}},
-                    '_properties': {
-                        'mw': self.parameters['unit_mw']},
-                },
-                'combined': {
-                    '_default': 0.0,
-                    '_emit': True,
-                    '_updater': 'set',
-                    '_divider': 'zero',
+                        'mw': self.parameters['unit_mw']
+                    },
                 }
+            },
+            'back': {
+                'aggregate': {
+                    '_default': 0.0,
+                    '_emit': True,
+                    '_divider': {
+                        'divider': polar_partition,
+                        'topology': {'back': ('aggregate',)}},
+                    '_properties': {
+                        'mw': self.parameters['unit_mw']
+                    },
+                }
+            },
+            'inclusion_body': {
+                '_default': 0.0,
+                '_emit': True,
+                '_updater': 'set',
+                '_divider': 'zero',
             },
             'molecules': {
                 '*': {
@@ -98,41 +106,43 @@ class InclusionBody(Process):
 
     def next_update(self, timestep, states):
         # get the states
-        front_body = states['inclusion_mass']['front']
-        back_body = states['inclusion_mass']['back']
+        front_aggregate = states['front']['aggregate']
+        back_aggregate = states['back']['aggregate']
         molecules = states['molecules']
         molecule_mass = sum(molecules.values())
 
-        total_body = front_body + back_body
-        if total_body > 0:
-            front_ratio = front_body / total_body
-            back_ratio = back_body / total_body
-            front_aggregation = self.aggregation * back_ratio * front_ratio * (front_ratio - back_ratio) * total_body
-            back_aggregation = self.aggregation * back_ratio * front_ratio * (back_ratio - front_ratio) * total_body
+        # aggregate existing damage at front or back
+        total_aggregate = front_aggregate + back_aggregate
+        if total_aggregate > 0:
+            front_ratio = front_aggregate / total_aggregate
+            back_ratio = back_aggregate / total_aggregate
+            front_aggregation = self.aggregation_rate * front_ratio * back_aggregate * (front_ratio - back_ratio)
+            back_aggregation = self.aggregation_rate * back_ratio * front_aggregate * (back_ratio - front_ratio)
         else:
-            front_aggregation = total_body
-            back_aggregation = total_body
+            front_aggregation = total_aggregate
+            back_aggregation = total_aggregate
 
+        # proportionate damage to all molecules
         if molecule_mass > 0:
-            # proportionate damage
             total_damage = self.damage_rate * molecule_mass
-            pole_damage = total_damage / 2
+            polar_damage = total_damage / 2
             delta_molecules = {
                 mol_id: - total_damage * mass / molecule_mass
                 for mol_id, mass in molecules.items()}
         else:
-            pole_damage = molecule_mass
+            polar_damage = molecule_mass
             delta_molecules = {}
 
-        delta_front = (front_aggregation + pole_damage) * timestep
-        delta_back = (back_aggregation + pole_damage) * timestep
+        # get change to front and back aggregates
+        delta_front = (front_aggregation + polar_damage) * timestep
+        delta_back = (back_aggregation + polar_damage) * timestep
 
         return {
-            'inclusion_mass': {
-                'front': delta_front,
-                'back': delta_back,
-                'combined': front_body + back_body + delta_front + delta_back
-            },
+            'front': {
+                'aggregate': delta_front},
+            'back': {
+                'aggregate': delta_back},
+            'inclusion_body': (front_aggregate + back_aggregate + delta_front + delta_back),
             'molecules': delta_molecules
         }
 
@@ -146,6 +156,7 @@ def run_inclusion_body(out_dir='out'):
 
     # get initial state
     initial_state = inclusion_body_process.initial_state({
+        'initial_mass': 1.0,
         'molecules': {
             'biomass': 1.0}})
 
