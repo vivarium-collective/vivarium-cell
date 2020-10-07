@@ -10,16 +10,16 @@ from vivarium.core.composition import (
     simulate_compartment_in_experiment,
     COMPARTMENT_OUT_DIR,
 )
+from vivarium.core.control import Control
 from vivarium.plots.agents_multigen import plot_agents_multigen
 
 # processes
 from vivarium.processes.meta_division import MetaDivision
 from vivarium_cell.processes.inclusion_body import InclusionBody
 from vivarium_cell.processes.growth_rate import GrowthRate
-from vivarium_cell.processes.divide_condition import DivideCondition
+from vivarium.processes.divide_condition import DivideCondition
 from vivarium_cell.processes.derive_globals import DeriveGlobals
 
-from vivarium_cell.experiments.control import control
 
 
 NAME = 'inclusion_body_growth'
@@ -146,7 +146,7 @@ def test_inclusion_body(total_time=1000):
         'total_time': total_time}
     return simulate_compartment_in_experiment(compartment, settings)
 
-def run_compartment(out_dir):
+def run_compartment(out_dir=COMPARTMENT_OUT_DIR):
     output_data = test_inclusion_body(
         total_time=4000)
     plot_settings = {}
@@ -162,6 +162,6 @@ experiments_library = {
 
 
 if __name__ == '__main__':
-    control(
-        experiments_library=experiments_library,
+    Control(
+        experiments=experiments_library,
         out_dir=COMPARTMENT_OUT_DIR)

@@ -1,7 +1,13 @@
+"""
+==========================
+Inclusion Body Experiments
+==========================
+"""
 
-from vivarium_cell.experiments.control import control
+from vivarium.core.control import Control
 from vivarium.core.composition import (
     compartment_hierarchy_experiment,
+    GENERATORS_KEY,
     EXPERIMENT_OUT_DIR,
 )
 
@@ -20,16 +26,19 @@ from vivarium_cell.plots.multibody_physics import (
 )
 
 
+def experiment_config():
+    pass
 
-def run_experiment(out_dir):
+lattice_config = make_lattice_config(
+    jitter_force=1e-4,
+    bounds=[30, 30],
+    n_bins=[10, 10])
+
+
+
+def run_experiment():
     agent_id = '1'
-    time_total = 5000
-    n_snapshots = 6
-    tagged_molecules = [
-        ('inclusion_body', 'front'),
-        ('inclusion_body', 'back'),
-        ('inclusion_body', 'combined'),
-    ]
+    time_total = 50 #00
 
     inclusion_config = {
         'agent_id': agent_id,
@@ -49,19 +58,19 @@ def run_experiment(out_dir):
         'agents': {
             agent_id: compartment_state}}
 
-    lattice_config = make_lattice_config(
-        jitter_force=1e-4,
-        bounds=[30, 30],
-        n_bins=[10, 10])
+    # lattice_config = make_lattice_config(
+    #     jitter_force=1e-4,
+    #     bounds=[30, 30],
+    #     n_bins=[10, 10])
 
     # declare the hierarchy
     hierarchy = {
-        'generators':{
+        GENERATORS_KEY:{
             'type': Lattice,
             'config': lattice_config},
         'agents': {
             agent_id: {
-                'generators': {
+                GENERATORS_KEY: {
                     'type': InclusionBodyGrowth,
                     'config': inclusion_config}}}}
 
@@ -74,6 +83,17 @@ def run_experiment(out_dir):
     experiment.update(time_total)
     data = experiment.emitter.get_data()
     experiment.end()
+
+    return data
+
+
+def inclusion_plots_suite(data=None, out_dir=EXPERIMENT_OUT_DIR):
+    n_snapshots = 6
+    tagged_molecules = [
+        ('inclusion_body', 'front'),
+        ('inclusion_body', 'back'),
+        ('inclusion_body', 'combined'),
+    ]
 
     # multigen plot
     plot_settings = {}
@@ -103,13 +123,26 @@ def run_experiment(out_dir):
 
 
 
+# libraries for control
 experiments_library = {
     '1': {
         'name': 'inclusion_lattice',
         'experiment': run_experiment},
 }
+plots_library = {
+    '1': inclusion_plots_suite
+}
+workflow_library = {
+    '1': {
+        'name': 'inclusion_body_experiment',
+        'experiment': '1',
+        'plots': ['1'],
+    }
+}
 
 if __name__ == '__main__':
-    control(
-        experiments_library=experiments_library,
+    Control(
+        experiments=experiments_library,
+        plots=plots_library,
+        workflows=workflow_library,
         out_dir=EXPERIMENT_OUT_DIR)
