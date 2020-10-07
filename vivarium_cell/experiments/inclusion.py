@@ -50,10 +50,11 @@ def run_experiment():
     # initial state
     compartment = InclusionBodyGrowth(inclusion_config)
     compartment_state = compartment.initial_state({
-        'inclusion_body': {
-            'front': 0.9,
-            'back': 0.1,
-        }})
+        'front': {
+            'aggregate': 0.9},
+        'back': {
+            'aggregate': 0.1}
+        })
     initial_state = {
         'agents': {
             agent_id: compartment_state}}

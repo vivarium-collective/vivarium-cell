@@ -104,7 +104,7 @@ class InclusionBodyGrowth(Generator):
         return {
             'inclusion_process': {
                 'front': ('front',),
-                'back': ('front',),
+                'back': ('back',),
                 'inclusion_body': ('inclusion_body',),
                 'molecules': ('molecules',),
             },
