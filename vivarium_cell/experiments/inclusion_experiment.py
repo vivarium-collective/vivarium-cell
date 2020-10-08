@@ -91,8 +91,8 @@ def inclusion_plots_suite(data=None, out_dir=EXPERIMENT_OUT_DIR):
     n_snapshots = 8
     tagged_molecules = [
         ('inclusion_body',),
-        # ('front', 'aggregate',),
-        # ('back', 'aggregate',),
+        ('front', 'aggregate',),
+        ('back', 'aggregate',),
     ]
 
     # multigen plot

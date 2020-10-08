@@ -132,15 +132,15 @@ class InclusionBody(Process):
         # proportionate damage to all molecules
         if molecule_mass > 0:
             total_damage = self.damage_rate * molecule_mass * timestep
-            polar_damage = total_damage / 2
             delta_molecules = {
                 mol_id: - total_damage * mass / molecule_mass
                 for mol_id, mass in molecules.items()}
         else:
-            polar_damage = molecule_mass
+            total_damage = molecule_mass
             delta_molecules = {}
 
         # get total change to front and back aggregates
+        polar_damage = total_damage / 2
         delta_front = (front_aggregation + polar_damage) * timestep
         delta_back = (back_aggregation + polar_damage) * timestep
 
@@ -149,7 +149,7 @@ class InclusionBody(Process):
                 'aggregate': delta_front},
             'back': {
                 'aggregate': delta_back},
-            'inclusion_body': (front_aggregate + back_aggregate + delta_front + delta_back),
+            'inclusion_body': (total_aggregate + total_damage),
             'molecules': delta_molecules,
         }
 
