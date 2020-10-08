@@ -119,12 +119,11 @@ class InclusionBody(Process):
         # existing damage aggregate at front or back, pulled towards pole with larger body
         total_aggregate = front_aggregate + back_aggregate
         if total_aggregate > 0:
-            front_ratio = front_aggregate / total_aggregate
-            back_ratio = back_aggregate / total_aggregate
+            combined = front_aggregate * back_aggregate / (total_aggregate ** 2)
             front_aggregation = self.aggregation_rate * \
-                                front_ratio * back_aggregate * (front_ratio - back_ratio)
+                                combined * (front_aggregate - back_aggregate) / total_aggregate
             back_aggregation = self.aggregation_rate * \
-                               back_ratio * front_aggregate * (back_ratio - front_ratio)
+                               combined * (back_aggregate - front_aggregate) / total_aggregate
         else:
             front_aggregation = total_aggregate
             back_aggregation = total_aggregate
