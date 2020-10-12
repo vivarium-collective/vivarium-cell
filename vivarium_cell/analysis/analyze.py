@@ -41,9 +41,24 @@ class Analyzer:
         self.snapshots_config = snapshots_config
         self.tags_config = tags_config
         self.timeseries_config = timeseries_config
+        self.data = None
+        self.environment_config = None
+
+    def setup(self):
+        args = self.parser.parse_args()
+        self.data, self.environment_config = Analyzer.get_data(
+            args, args.experiment_id)
+        self.out_dir = os.path.join(OUT_DIR, args.experiment_id)
+        if os.path.exists(self.out_dir):
+            if not args.force:
+                raise IOError('Directory {} already exists'.format(
+                    self.out_dir))
+        else:
+            os.makedirs(self.out_dir)
+        return args
 
     def run(self):
-        args = self.parser.parse_args()
+        args = self.setup()
         self.plot(args)
 
     @staticmethod
@@ -136,18 +151,9 @@ class Analyzer:
         return path_ts
 
     def plot(self, args):
-        data, environment_config = Analyzer.get_data(
-            args, args.experiment_id)
-        out_dir = os.path.join(OUT_DIR, args.experiment_id)
-        if os.path.exists(out_dir):
-            if not args.force:
-                raise IOError('Directory {} already exists'.format(out_dir))
-        else:
-            os.makedirs(out_dir)
-
         if args.snapshots:
             Analyzer.plot_snapshots(
-                data, environment_config, out_dir,
+                self.data, self.environment_config, self.out_dir,
                 self.snapshots_config
             )
         if args.tags is not None:
@@ -157,14 +163,14 @@ class Analyzer:
                     tuple(path) for path in reader
                 ]
             Analyzer.plot_tags(
-                data, environment_config, tagged_molecules, out_dir,
-                self.tags_config
+                self.data, self.environment_config, tagged_molecules,
+                self.out_dir, self.tags_config
             )
         if args.timeseries:
             Analyzer.plot_timeseries(
-                data, out_dir, self.timeseries_config)
+                self.data, self.out_dir, self.timeseries_config)
         if args.colony_metrics:
-            Analyzer.plot_colony_metrics(data, out_dir)
+            Analyzer.plot_colony_metrics(self.data, self.out_dir)
 
     def _get_parser(self):
         parser = argparse.ArgumentParser()
