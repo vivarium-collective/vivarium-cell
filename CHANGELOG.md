@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.0.24
+
+* Refactor analysis tool to make it easier for users to create their own
+  analyzers by creating subclasses
+
 ## v0.0.23
 
 * import from `vivarium/plots`

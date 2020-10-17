@@ -91,6 +91,7 @@ class Lattice(Generator):
     Lattice:  A two-dimensional lattice environmental model with multibody physics and diffusing molecular fields.
     """
 
+    name = 'lattice_environment'
     defaults = {
         # To exclude a process, from the compartment, set its
         # configuration dictionary to None, e.g. colony_mass_deriver
