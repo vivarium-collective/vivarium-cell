@@ -32,7 +32,6 @@ class DiffusionNetwork(Process):
         self.mw = self.parameters['mw']
         self.molecule_ids = self.parameters['mw'].keys()
         self.mesh_size = self.parameters['mesh_size']
-        self.time_step = self.parameters['time_step']
 
         # get molecule radii by molecular weights
         self.rp = calculate_rp_from_mw(self.molecule_ids, array_from(self.mw))
@@ -41,23 +40,9 @@ class DiffusionNetwork(Process):
         self.diffusion_constants = compute_diffusion_constants_from_mw(
             self.molecule_ids, self.rp, self.mesh_size, self.edges)
 
-        # construct A matrix based off of graph, all edges assumed bidirectional
+        # initialize A matrix
         self.A = np.asarray([np.identity(len(self.nodes)) for mol in self.molecule_ids])
-        for edge_id, edge in self.edges.items():
-            node_index_1 = np.where(self.nodes == edge['nodes'][0])[0][0]
-            node_index_2 = np.where(self.nodes == edge['nodes'][1])[0][0]
-            dx = edge['dx']
-            diffusion_constants = array_from(self.diffusion_constants[edge_id])
-            if 'diffusion_scaling_constant' in edge:
-                diffusion_constants *= edge['diffusion_scaling_constant']
-            if 'diffusion_constants' in edge:
-                diffusion_constants = edge['diffusion_constants']
-            alpha = np.divide(np.multiply(diffusion_constants,
-                                          self.time_step), dx ** 2)
-            self.A[:, node_index_1, node_index_1] += alpha
-            self.A[:, node_index_2, node_index_2] += alpha
-            self.A[:, node_index_1, node_index_2] -= alpha
-            self.A[:, node_index_2, node_index_1] -= alpha
+
 
     def ports_schema(self):
         '''
@@ -94,6 +79,22 @@ class DiffusionNetwork(Process):
         return schema
 
     def next_update(self, timestep, state):
+        # construct A matrix based off of graph, all edges assumed bidirectional
+        for edge_id, edge in self.edges.items():
+            node_index_1 = np.where(self.nodes == edge['nodes'][0])[0][0]
+            node_index_2 = np.where(self.nodes == edge['nodes'][1])[0][0]
+            dx = state[edge['nodes'][0]]['length']/2 + state[edge['nodes'][1]]['length']/2
+            diffusion_constants = array_from(self.diffusion_constants[edge_id])
+            if 'diffusion_scaling_constant' in edge:
+                diffusion_constants *= edge['diffusion_scaling_constant']
+            if 'diffusion_constants' in edge:
+                diffusion_constants = edge['diffusion_constants']
+            alpha = np.divide(np.multiply(diffusion_constants,
+                                          timestep), dx ** 2)
+            self.A[:, node_index_1, node_index_1] += alpha
+            self.A[:, node_index_2, node_index_2] += alpha
+            self.A[:, node_index_1, node_index_2] -= alpha
+            self.A[:, node_index_2, node_index_1] -= alpha
 
         conc = np.asarray([np.multiply(array_from(state[node]['molecules']),
                                        array_from(self.mw)) / state[node]['volume']
@@ -124,15 +125,12 @@ def run_diffusion_network_process(out_dir='out'):
         'edges': {
             '1': {
                 'nodes': ['cytosol_front', 'nucleoid'],
-                'dx': 0.75,
             },
             '2': {
                 'nodes': ['nucleoid', 'cytosol_rear'],
-                'dx': 0.75,
             },
             # '3': {
             #     'nodes': ['cytosol_front', 'cytosol_rear'],
-            #     'dx': 0.75,
             # }
             },
         'mw': {
@@ -156,18 +154,21 @@ def run_diffusion_network_process(out_dir='out'):
         'total_time': 30,
         'initial_state': {
             'cytosol_front': {
+                'length': 0.75,
                 'volume': 0.3,
                 'molecules': {
                     mol_id: n
                     for mol_id in molecule_ids}
             },
             'nucleoid': {
+                'length': 0.75,
                 'volume': 0.3,
                 'molecules': {
                     mol_id: 0
                     for mol_id in molecule_ids}
             },
             'cytosol_rear': {
+                'length': 0.75,
                 'volume': 0.3,
                 'molecules': {
                     mol_id: 0
@@ -193,6 +194,7 @@ def plot_nucleoid_diff(rp, output, out_dir):
     plt.plot(rp*2, np.average(array_from(output['nucleoid']['molecules']), axis = 1)/1E6)
     plt.xlabel('Molecule size (nm)')
     plt.ylabel('Percentage of time in nucleoid (%)')
+    plt.ylim(0, 0.35)
     plt.title('Percentage occupancy in nucleoid over 30 min with mesh')
     out_file = out_dir + '/nucleoid_diff.png'
     plt.savefig(out_file)
