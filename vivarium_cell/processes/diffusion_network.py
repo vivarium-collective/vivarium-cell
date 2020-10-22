@@ -10,7 +10,6 @@ from vivarium.core.composition import (
 )
 from vivarium.plots.simulation_output import plot_simulation_output
 
-# a global NAME is used for the output directory and for the process name
 NAME = 'diffusion_network'
 
 
@@ -23,7 +22,7 @@ class DiffusionNetwork(Process):
         'edges': {},
         'mw': {},   # in fg
         'mesh_size': 50,    # in nm
-        'time_step': 1,     # in s
+        'time_step': 0.1,     # in s
     }
 
     def __init__(self, parameters=None):
@@ -76,12 +75,10 @@ class DiffusionNetwork(Process):
         schema = {
             node_id: {
                 'volume': {
-                    # '_value': node['volume'],
                     '_default': 1.0,
                     '_updater': 'set',
                 },
                 'length': {
-                    # '_value': node['length'],
                     '_default': 1.0,
                     '_updater': 'set',
                 },
@@ -111,7 +108,7 @@ class DiffusionNetwork(Process):
         update = {
             node_id: {
                 'molecules': array_to(self.molecule_ids,
-                                      count_final[np.where(self.nodes == node_id)[0][0]]),
+                                      count_final[np.where(self.nodes == node_id)[0][0]].astype(int)),
             } for node_id in self.nodes
         }
         return update
@@ -120,7 +117,8 @@ class DiffusionNetwork(Process):
 # functions to configure and run the process
 def run_diffusion_network_process(out_dir='out'):
     # initialize the process by passing initial_parameters
-    n = 1E6
+    n = int(1E6)
+    molecule_ids = ['7', '6', '5', '4', '3', '2', '1', '0']
     initial_parameters = {
         'nodes': ['cytosol_front', 'nucleoid', 'cytosol_rear'],
         'edges': {
@@ -147,7 +145,7 @@ def run_diffusion_network_process(out_dir='out'):
             '1': 10E-5,
             '0': 4E-5,
         },
-        'molecule_ids': ['7', '6', '5', '4', '3', '2', '1', '0'],
+        'molecule_ids': molecule_ids,
         'mesh_size': 50,
     }
 
@@ -160,39 +158,20 @@ def run_diffusion_network_process(out_dir='out'):
             'cytosol_front': {
                 'volume': 0.3,
                 'molecules': {
-                    '7': n,
-                    '6': n,
-                    '5': n,
-                    '4': n,
-                    '3': n,
-                    '2': n,
-                    '1': n,
-                    '0': n,
-                }
-            }, 'nucleoid': {
+                    mol_id: n
+                    for mol_id in molecule_ids}
+            },
+            'nucleoid': {
                 'volume': 0.3,
                 'molecules': {
-                    '7': 0,
-                    '6': 0,
-                    '5': 0,
-                    '4': 0,
-                    '3': 0,
-                    '2': 0,
-                    '1': 0,
-                    '0': 0,
-                }
-            }, 'cytosol_rear': {
+                    mol_id: 0
+                    for mol_id in molecule_ids}
+            },
+            'cytosol_rear': {
                 'volume': 0.3,
                 'molecules': {
-                    '7': 0,
-                    '6': 0,
-                    '5': 0,
-                    '4': 0,
-                    '3': 0,
-                    '2': 0,
-                    '1': 0,
-                    '0': 0,
-                }
+                    mol_id: 0
+                    for mol_id in molecule_ids}
             },
         }
     }
