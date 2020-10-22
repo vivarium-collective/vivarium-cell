@@ -153,7 +153,7 @@ def run_diffusion_network_process(out_dir='out'):
 
     # run the simulation
     sim_settings = {
-        'total_time': 10,
+        'total_time': 30,
         'initial_state': {
             'cytosol_front': {
                 'volume': 0.3,
@@ -175,45 +175,31 @@ def run_diffusion_network_process(out_dir='out'):
             },
         }
     }
+
     output = simulate_process_in_experiment(diffusion_network_process, sim_settings)
-
-    # helpful parameters to recalculate for plots
-    edges = initial_parameters['edges']
-    mw = initial_parameters['mw']
-    molecule_ids = initial_parameters['mw'].keys()
-    mesh_size = initial_parameters['mesh_size']
-
-    # get molecule radii by molecular weights
-    rp = calculate_rp_from_mw(molecule_ids, array_from(mw))
-
-    # get diffusion constants per molecule
-    diffusion_constants = compute_diffusion_constants_from_mw(
-        molecule_ids, rp, mesh_size, edges)
+    rp = diffusion_network_process.rp
+    diffusion_constants = diffusion_network_process.diffusion_constants
 
     # plot the simulation output
     plot_output(output, out_dir)
     # plot_diff_range(diffusion_constants, rp, out_dir)
-    # plot_nucleoid_diff(output, out_dir)
+    plot_nucleoid_diff(rp, output, out_dir)
     # plot_radius_range(rp, output, out_dir)
 
 
 # Plot functions
-def plot_nucleoid_diff(output, out_dir):
-    total_count = np.add(np.add(output['nucleoid']['molecules'][0],
-                                output['cytosol_front']['molecules'][0]),
-                         output['cytosol_rear']['molecules'][0])
-    for i in range(len(output['nucleoid']['molecules'][0])):
-        plt.plot(output['time'], [time[i] for time in output['nucleoid']['molecules']])
-    size_str = np.rint(np.multiply(output['cytosol_front']['rp'][1], 2))
-    plt.legend(['size = ' + str(size) + ' nm' for size in size_str], loc = 'lower right')
-    plt.xlabel('time (s)')
-    plt.ylabel('Number of molecules')
-    plt.title('Percentage occupancy in nucleoid')
+def plot_nucleoid_diff(rp, output, out_dir):
+    plt.figure()
+    plt.plot(rp*2, np.average(array_from(output['nucleoid']['molecules']), axis = 1)/1E6)
+    plt.xlabel('Molecule size (nm)')
+    plt.ylabel('Percentage of time in nucleoid (%)')
+    plt.title('Percentage occupancy in nucleoid over 30 min with mesh')
     out_file = out_dir + '/nucleoid_diff.png'
     plt.savefig(out_file)
 
 
 def plot_diff_range(diffusion_constants, rp, out_dir):
+    plt.figure()
     plt.plot(rp * 2, array_from(diffusion_constants['1']))
     plt.plot(rp * 2, array_from(diffusion_constants['3']))
     plt.yscale('log')
@@ -226,7 +212,7 @@ def plot_diff_range(diffusion_constants, rp, out_dir):
 
 
 def plot_radius_range(rp, output, out_dir):
-    # import ipdb; ipdb.set_trace()
+    plt.figure()
     for i in range(len(output['nucleoid']['molecules'])):
         plt.plot(output['time'], array_from(output['nucleoid']['molecules'])[i])
     size_str = np.rint(np.multiply(rp, 2))
@@ -239,6 +225,7 @@ def plot_radius_range(rp, output, out_dir):
 
 
 def plot_output(output, out_dir):
+    plt.figure()
     plt.plot(output['time'], array_from(output['cytosol_front']['molecules'])[-5], 'b')
     plt.plot(output['time'], array_from(output['nucleoid']['molecules'])[-5], 'r')
     plt.plot(output['time'], array_from(output['cytosol_rear']['molecules'])[-5], 'g')
