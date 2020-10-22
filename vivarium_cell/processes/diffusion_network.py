@@ -15,47 +15,40 @@ NAME = 'diffusion_network'
 
 
 class DiffusionNetwork(Process):
-    '''
-    This mock process provides a basic template that can be used for a new process
-    '''
 
-    # give the process a name, so that it can register in the process_repository
     name = NAME
 
-    # declare default parameters as class variables
     defaults = {
-        'nodes': {},
+        'nodes': [],
         'edges': {},
-        'molecule_ids': [],
-        'mw': [],   # in fg
+        'mw': {},   # in fg
         'mesh_size': 50,    # in nm
-        'diffusion_constants': [],      # in um^2 / s
         'time_step': 1,     # in s
     }
 
     def __init__(self, parameters=None):
         super(DiffusionNetwork, self).__init__(parameters)
-        self.nodes = self.parameters['nodes']
+        self.nodes = np.asarray(self.parameters['nodes'])
         self.edges = self.parameters['edges']
-        self.molecule_ids = self.parameters['molecule_ids']
         self.mw = self.parameters['mw']
+        self.molecule_ids = self.parameters['mw'].keys()
         self.mesh_size = self.parameters['mesh_size']
-        self.diffusion_constants = self.parameters['diffusion_constants']
         self.time_step = self.parameters['time_step']
+
+        # get molecule radii by molecular weights
+        self.rp = calculate_rp_from_mw(self.molecule_ids, array_from(self.mw))
 
         # get diffusion constants per molecule
         self.diffusion_constants = compute_diffusion_constants_from_mw(
-            self.molecule_ids, self.mw, self.mesh_size, self.edges)
+            self.molecule_ids, self.rp, self.mesh_size, self.edges)
 
         # construct A matrix based off of graph, all edges assumed bidirectional
         self.A = np.asarray([np.identity(len(self.nodes)) for mol in self.molecule_ids])
-        self.nodes_list = np.asarray(list(self.nodes.keys()))
         for edge_id, edge in self.edges.items():
-            node_index_1 = np.where(self.nodes_list == edge['nodes'][0])[0][0]
-            node_index_2 = np.where(self.nodes_list == edge['nodes'][1])[0][0]
-            dx = self.nodes[edge['nodes'][0]]['length'] / 2 + \
-                 self.nodes[edge['nodes'][1]]['length'] / 2
-            diffusion_constants = self.diffusion_constants[edge_id]
+            node_index_1 = np.where(self.nodes == edge['nodes'][0])[0][0]
+            node_index_2 = np.where(self.nodes == edge['nodes'][1])[0][0]
+            dx = edge['dx']
+            diffusion_constants = array_from(self.diffusion_constants[edge_id])
             if 'diffusion_scaling_constant' in edge:
                 diffusion_constants *= edge['diffusion_scaling_constant']
             if 'diffusion_constants' in edge:
@@ -80,95 +73,199 @@ class DiffusionNetwork(Process):
         * `_emit`
         * `_serializer`
         '''
-
-        return {
+        schema = {
             node_id: {
-                # TODO: ask if this is an acceptable definition
                 'volume': {
-                    '_value': node['volume'],
-                    '_default': 0.33,
+                    # '_value': node['volume'],
+                    '_default': 1.0,
                     '_updater': 'set',
                 },
                 'length': {
-                    '_value': node['length'],
-                    '_default': 0.75,
+                    # '_value': node['length'],
+                    '_default': 1.0,
                     '_updater': 'set',
                 },
                 'molecules': {
-                    '_value': node['molecules'],
-                    '_default': np.zeros(len(self.molecule_ids)),
-                    '_updater': 'set',
-                    '_emit': True,
+                    '*': {
+                        '_default': 0,
+                        '_updater': 'set',
+                        '_emit': True,
+                    }
                 },
-            } for node_id, node in self.parameters['nodes'].items()
+            } for node_id in self.parameters['nodes']
         }
+        return schema
 
-    def next_update(self, timestep, nodes):
-        # get concentrations
-        conc = np.asarray([np.multiply(node['molecules'], self.mw) / node['volume']
-                           for node_id, node in nodes.items()])
+    def next_update(self, timestep, state):
+
+        conc = np.asarray([np.multiply(array_from(state[node]['molecules']),
+                                       array_from(self.mw)) / state[node]['volume']
+                           for node in state])
         conc_final = np.asarray([np.matmul(np.linalg.inv(a), conc[:, i])
                                  for i, a in enumerate(self.A)]).T
         volumes = np.asarray(
-            [node['volume'] for node_id, node in nodes.items()])
-        count_final = np.rint(np.asarray([np.divide(node * volumes[i], self.mw)
+            [state[node]['volume'] for node in state])
+        count_final = np.rint(np.asarray([np.divide(node * volumes[i],
+                                                    array_from(self.mw))
                                           for i, node in enumerate(conc_final)]))
         update = {
-                    node_id: {
-                        'molecules': count_final[np.where(self.nodes_list == node_id)[0][0]],
-                    } for node_id, node in nodes.items()
-                }
+            node_id: {
+                'molecules': array_to(self.molecule_ids,
+                                      count_final[np.where(self.nodes == node_id)[0][0]]),
+            } for node_id in self.nodes
+        }
         return update
 
 
 # functions to configure and run the process
 def run_diffusion_network_process(out_dir='out'):
     # initialize the process by passing initial_parameters
+    n = 1E6
     initial_parameters = {
-        'nodes': {
-            'cytosol_front': {
-                'volume': 0.3,
-                'length': 0.75,
-                'molecules': np.asarray([1E6, 0])
-            }, 'nucleoid': {
-                'volume': 0.3,
-                'length': 0.75,
-                'molecules': np.asarray([0, 0])
-            }, 'cytosol_rear': {
-                'volume': 0.3,
-                'length': 0.75,
-                'molecules': np.asarray([0, 1E6])
-            }
-        },
-        # 'edges': [['cytosol_front', 'nucleoid'], ['cytosol_rear', 'nucleoid']],
+        'nodes': ['cytosol_front', 'nucleoid', 'cytosol_rear'],
         'edges': {
             '1': {
-                'nodes': ['cytosol_front', 'nucleoid']},
-            '2': {
-                'nodes': ['cytosol_rear', 'nucleoid']},
+                'nodes': ['cytosol_front', 'nucleoid'],
+                'dx': 0.75,
             },
-        'molecule_ids': ['large_protein', 'small_protein'],
-        'mw': [2000E-5, 4E-5],
-        'molecule_diameters': [100, 40],
+            '2': {
+                'nodes': ['nucleoid', 'cytosol_rear'],
+                'dx': 0.75,
+            },
+            # '3': {
+            #     'nodes': ['cytosol_front', 'cytosol_rear'],
+            #     'dx': 0.75,
+            # }
+            },
+        'mw': {
+            '7': 20000E-5,
+            '6': 9000E-5,
+            '5': 5000E-5,
+            '4': 2000E-5,
+            '3': 1000E-5,
+            '2': 100E-5,
+            '1': 10E-5,
+            '0': 4E-5,
+        },
+        'molecule_ids': ['7', '6', '5', '4', '3', '2', '1', '0'],
+        'mesh_size': 50,
     }
 
     diffusion_network_process = DiffusionNetwork(initial_parameters)
 
     # run the simulation
-    sim_settings = {'total_time': 10}
+    sim_settings = {
+        'total_time': 10,
+        'initial_state': {
+            'cytosol_front': {
+                'volume': 0.3,
+                'molecules': {
+                    '7': n,
+                    '6': n,
+                    '5': n,
+                    '4': n,
+                    '3': n,
+                    '2': n,
+                    '1': n,
+                    '0': n,
+                }
+            }, 'nucleoid': {
+                'volume': 0.3,
+                'molecules': {
+                    '7': 0,
+                    '6': 0,
+                    '5': 0,
+                    '4': 0,
+                    '3': 0,
+                    '2': 0,
+                    '1': 0,
+                    '0': 0,
+                }
+            }, 'cytosol_rear': {
+                'volume': 0.3,
+                'molecules': {
+                    '7': 0,
+                    '6': 0,
+                    '5': 0,
+                    '4': 0,
+                    '3': 0,
+                    '2': 0,
+                    '1': 0,
+                    '0': 0,
+                }
+            },
+        }
+    }
     output = simulate_process_in_experiment(diffusion_network_process, sim_settings)
+
+    # helpful parameters to recalculate for plots
+    edges = initial_parameters['edges']
+    mw = initial_parameters['mw']
+    molecule_ids = initial_parameters['mw'].keys()
+    mesh_size = initial_parameters['mesh_size']
+
+    # get molecule radii by molecular weights
+    rp = calculate_rp_from_mw(molecule_ids, array_from(mw))
+
+    # get diffusion constants per molecule
+    diffusion_constants = compute_diffusion_constants_from_mw(
+        molecule_ids, rp, mesh_size, edges)
 
     # plot the simulation output
     plot_output(output, out_dir)
+    # plot_diff_range(diffusion_constants, rp, out_dir)
+    # plot_nucleoid_diff(output, out_dir)
+    # plot_radius_range(rp, output, out_dir)
+
+
+# Plot functions
+def plot_nucleoid_diff(output, out_dir):
+    total_count = np.add(np.add(output['nucleoid']['molecules'][0],
+                                output['cytosol_front']['molecules'][0]),
+                         output['cytosol_rear']['molecules'][0])
+    for i in range(len(output['nucleoid']['molecules'][0])):
+        plt.plot(output['time'], [time[i] for time in output['nucleoid']['molecules']])
+    size_str = np.rint(np.multiply(output['cytosol_front']['rp'][1], 2))
+    plt.legend(['size = ' + str(size) + ' nm' for size in size_str], loc = 'lower right')
+    plt.xlabel('time (s)')
+    plt.ylabel('Number of molecules')
+    plt.title('Percentage occupancy in nucleoid')
+    out_file = out_dir + '/nucleoid_diff.png'
+    plt.savefig(out_file)
+
+
+def plot_diff_range(diffusion_constants, rp, out_dir):
+    plt.plot(rp * 2, array_from(diffusion_constants['1']))
+    plt.plot(rp * 2, array_from(diffusion_constants['3']))
+    plt.yscale('log')
+    plt.xlabel(r'Molecule size ($nm$)')
+    plt.ylabel(r'Diffusion constant ($\mu m^2/s$)')
+    plt.title('Diffusion constants into nucleoid')
+    plt.legend(['With mesh', 'Without mesh'])
+    out_file = out_dir + '/diff_range.png'
+    plt.savefig(out_file)
+
+
+def plot_radius_range(rp, output, out_dir):
+    # import ipdb; ipdb.set_trace()
+    for i in range(len(output['nucleoid']['molecules'])):
+        plt.plot(output['time'], array_from(output['nucleoid']['molecules'])[i])
+    size_str = np.rint(np.multiply(rp, 2))
+    plt.legend(['size = ' + str(size) + ' nm' for size in size_str], loc = 'lower right')
+    plt.xlabel('time (s)')
+    plt.ylabel('Number of molecules')
+    plt.title('Brownian diffusion into nucleoid with mesh')
+    out_file = out_dir + '/radius_range.png'
+    plt.savefig(out_file)
 
 
 def plot_output(output, out_dir):
-    plt.plot(output['time'], [time[0] for time in output['cytosol_front']['molecules']], 'b')
-    plt.plot(output['time'], [time[0] for time in output['nucleoid']['molecules']], 'r')
-    plt.plot(output['time'], [time[0] for time in output['cytosol_rear']['molecules']], 'g')
-    plt.plot(output['time'], [time[1] for time in output['cytosol_front']['molecules']], 'b--')
-    plt.plot(output['time'], [time[1] for time in output['nucleoid']['molecules']], 'r--')
-    plt.plot(output['time'], [time[1] for time in output['cytosol_rear']['molecules']], 'g--')
+    plt.plot(output['time'], array_from(output['cytosol_front']['molecules'])[-5], 'b')
+    plt.plot(output['time'], array_from(output['nucleoid']['molecules'])[-5], 'r')
+    plt.plot(output['time'], array_from(output['cytosol_rear']['molecules'])[-5], 'g')
+    plt.plot(output['time'], array_from(output['cytosol_front']['molecules'])[-1], 'b--')
+    plt.plot(output['time'], array_from(output['nucleoid']['molecules'])[-1], 'r--')
+    plt.plot(output['time'], array_from(output['cytosol_rear']['molecules'])[-1], 'g--')
     plt.xlabel('time (s)')
     plt.ylabel('Number of molecules')
     plt.title('Brownian diffusion over compartments')
@@ -181,7 +278,8 @@ def plot_output(output, out_dir):
     plt.savefig(out_file)
 
 
-def compute_diffusion_constants_from_mw(molecule_ids, mw, mesh_size, edges):
+# Diffusion constant functions
+def compute_diffusion_constants_from_mw(molecule_ids, r_p, mesh_size, edges):
     '''
     Warnings: Temperature assumed to be 37°C.
 
@@ -203,9 +301,6 @@ def compute_diffusion_constants_from_mw(molecule_ids, mw, mesh_size, edges):
     n = n_eff_cytoplasm * cP_to_Pas
     diffusion_constants = {}
 
-    # calculate r_p for all molecular weights
-    r_p = calculate_rp_from_mw(molecule_ids, mw)
-
     for edge_id, edge in edges.items():
         if 'periplasm' in edge['nodes']:
             n = n_eff_periplasm * cP_to_Pas
@@ -216,11 +311,12 @@ def compute_diffusion_constants_from_mw(molecule_ids, mw, mesh_size, edges):
         # Einstein-Stokes equation for baseline diffusion constant
         dc = np.divide(K_B * temp * m2_to_um2, np.multiply(
             6 * np.pi * n * nm_to_m, r_p))
+
         # calculate impact on diffusion from mesh
         if 'nucleoid' in edge['nodes']:
             dc = np.multiply(dc, np.exp(np.multiply((-np.pi / 4),
-                                            np.divide(r_p, r_o)**2)))
-        diffusion_constants[edge_id] = dc
+                                        np.divide(r_p, r_o)**2)))
+        diffusion_constants[edge_id] = array_to(molecule_ids, dc)
 
     return diffusion_constants
 
@@ -240,10 +336,18 @@ def calculate_rp_from_mw(molecule_ids, mw):
     r_p = np.multiply(r_p0, np.power(np.multiply(mw, fg_to_kDa), rp_power))
     return r_p
 
+# Helper functions
+def array_from(d):
+    return np.array(list(d.values()))
 
-# These function are from spatial_tool.py in WCM for reference, written by Ray
+
+def array_to(keys, array):
+    return {
+        key: array[index]
+        for index, key in enumerate(keys)}
 
 
+# The following functions are from spatial_tool.py in WCM for reference, written by Ray
 def compute_diffusion_constant_from_rp(rp,
                                        loc = None,
                                        temp = None,
