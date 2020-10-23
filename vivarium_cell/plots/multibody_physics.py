@@ -525,7 +525,6 @@ def plot_tags(data, plot_config):
 
                     # select random initial hue
                     if tag_id not in tag_colors:
-                        print('Picking random color for {}'.format(tag_id))
                         hue = random.choice(HUES)
                         tag_color = [hue] + FLOURESCENT_SV
                         tag_colors[tag_id] = tag_color
@@ -572,7 +571,6 @@ def plot_tags(data, plot_config):
                     concentrations.append(level)
                     intensity = (level - min_tag)/ (max_tag - min_tag)
                     agent_color = tag_h, tag_s, intensity
-                    tag_color = tag_colors[tag_id]
                     agent_rgb = matplotlib.colors.hsv_to_rgb(agent_color)
                     used_agent_colors.append(agent_rgb)
                 else:
@@ -601,7 +599,10 @@ def plot_tags(data, plot_config):
                 sorted_idx = np.argsort(concentrations)
                 cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
                     'row_{}'.format(row_idx),
-                    np.array(used_agent_colors)[sorted_idx],
+                    [
+                        np.array(used_agent_colors)[sorted_idx][0],
+                        np.array(used_agent_colors)[sorted_idx][-1],
+                    ],
                 )
                 mappable = matplotlib.cm.ScalarMappable(norm, cmap)
                 fig.colorbar(mappable, cax=cax, format='%.6f')
