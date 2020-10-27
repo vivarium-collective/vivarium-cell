@@ -42,8 +42,6 @@ class DiffusionNetwork(Process):
         self.diffusion_constants = compute_diffusion_constants_from_mw(
             self.molecule_ids, self.rp, self.mesh_size, self.edges)
 
-        # initialize A matrix
-        self.A = np.asarray([np.identity(len(self.nodes)) for mol in self.molecule_ids])
 
 
     def ports_schema(self):
@@ -79,6 +77,7 @@ class DiffusionNetwork(Process):
         return schema
 
     def next_update(self, timestep, state):
+        A = np.asarray([np.identity(len(self.nodes)) for mol in self.molecule_ids])
 
         # construct A matrix based off of graph, all edges assumed bidirectional
         for edge_id, edge in self.edges.items():
@@ -94,10 +93,10 @@ class DiffusionNetwork(Process):
             if 'diffusion_constants' in edge:
                 diffusion_constants = edge['diffusion_constants']
             alpha = diffusion_constants * (cross_sectional_area / dx) * timestep
-            self.A[:, node_index_1, node_index_1] += alpha / vol_1
-            self.A[:, node_index_2, node_index_2] += alpha / vol_2
-            self.A[:, node_index_1, node_index_2] -= alpha / vol_1
-            self.A[:, node_index_2, node_index_1] -= alpha / vol_2
+            A[:, node_index_1, node_index_1] += alpha / vol_1
+            A[:, node_index_2, node_index_2] += alpha / vol_2
+            A[:, node_index_1, node_index_2] -= alpha / vol_1
+            A[:, node_index_2, node_index_1] -= alpha / vol_2
 
         volumes = np.asarray(
             [state[node]['volume'] for node in state])
@@ -105,7 +104,7 @@ class DiffusionNetwork(Process):
                                                array_from(self.mw)) / state[node]['volume']
                                    for node in state])
         conc_final = np.asarray([np.matmul(np.linalg.inv(a), conc_initial[:, i])
-                                 for i, a in enumerate(self.A)]).T
+                                 for i, a in enumerate(A)]).T
         count_initial = np.asarray([array_from(state[node]['molecules'])
                                     for node in state])
         count_final = np.asarray([saferound(col, 0) for col in np.asarray(
@@ -138,11 +137,11 @@ def test_diffusion_network_process(out_dir='out'):
         'edges': {
             '1': {
                 'nodes': ['cytosol_front', 'nucleoid'],
-                'cross_sectional_area': np.pi * 0.4 ** 2,
+                'cross_sectional_area': np.pi * 0.3 ** 2,
             },
             '2': {
                 'nodes': ['nucleoid', 'cytosol_rear'],
-                'cross_sectional_area': np.pi * 0.4 ** 2,
+                'cross_sectional_area': np.pi * 0.3 ** 2,
             },
             # '3': {
             #     'nodes': ['cytosol_front', 'cytosol_rear'],
@@ -169,21 +168,21 @@ def test_diffusion_network_process(out_dir='out'):
         'initial_state': {
             'cytosol_front': {
                 'length': 0.75,
-                'volume': 0.3,
+                'volume': 0.25,
                 'molecules': {
                     mol_id: n
                     for mol_id in molecule_ids}
             },
             'nucleoid': {
                 'length': 0.75,
-                'volume': 0.6,
+                'volume': 0.5,
                 'molecules': {
                     mol_id: 0
                     for mol_id in molecule_ids}
             },
             'cytosol_rear': {
                 'length': 0.75,
-                'volume': 0.3,
+                'volume': 0.25,
                 'molecules': {
                     mol_id: 0
                     for mol_id in molecule_ids}
@@ -199,7 +198,7 @@ def test_diffusion_network_process(out_dir='out'):
     plot_output(output, out_dir)
     # plot_diff_range(diffusion_constants, rp, out_dir)
     plot_nucleoid_diff(rp, output, out_dir)
-    # plot_radius_range(rp, output, out_dir)
+    plot_radius_range(rp, output, out_dir)
 
 
 # Plot functions
@@ -242,9 +241,9 @@ def plot_radius_range(rp, output, out_dir):
 
 def plot_output(output, out_dir):
     plt.figure()
-    plt.plot(output['time'], array_from(output['cytosol_front']['molecules'])[-5], 'b')
-    plt.plot(output['time'], array_from(output['nucleoid']['molecules'])[-5], 'r')
-    plt.plot(output['time'], array_from(output['cytosol_rear']['molecules'])[-5], 'g')
+    plt.plot(output['time'], array_from(output['cytosol_front']['molecules'])[0], 'b')
+    plt.plot(output['time'], array_from(output['nucleoid']['molecules'])[0], 'r')
+    plt.plot(output['time'], array_from(output['cytosol_rear']['molecules'])[0], 'g')
     plt.plot(output['time'], array_from(output['cytosol_front']['molecules'])[-1], 'b--')
     plt.plot(output['time'], array_from(output['nucleoid']['molecules'])[-1], 'r--')
     plt.plot(output['time'], array_from(output['cytosol_rear']['molecules'])[-1], 'g--')
@@ -368,7 +367,7 @@ if __name__ == '__main__':
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
-    run_diffusion_network_process(out_dir)
+    test_diffusion_network_process(out_dir)
 
 
 
