@@ -267,7 +267,7 @@ def plot_snapshots(data, plot_config):
     check_plt_backend()
 
     n_snapshots = plot_config.get('n_snapshots', 6)
-    out_dir = plot_config.get('out_dir', 'out')
+    out_dir = plot_config.get('out_dir', False)
     filename = plot_config.get('filename', 'snapshots')
     agent_shape = plot_config.get('agent_shape', 'segment')
     phylogeny_names = plot_config.get('phylogeny_names', True)
@@ -393,11 +393,12 @@ def plot_snapshots(data, plot_config):
                 agents_now = agents[time]
                 plot_agents(ax, agents_now, agent_colors, agent_shape, dead_color)
 
-    fig_path = os.path.join(out_dir, filename)
-    fig.subplots_adjust(wspace=0.7, hspace=0.1)
-    fig.savefig(fig_path, bbox_inches='tight')
-    plt.close(fig)
     plt.rcParams.update({'font.size': original_fontsize})
+    if out_dir:
+        fig_path = os.path.join(out_dir, filename)
+        fig.subplots_adjust(wspace=0.7, hspace=0.1)
+        fig.savefig(fig_path, bbox_inches='tight')
+        plt.close(fig)
 
 def get_fluorescent_color(baseline_hsv, tag_color, intensity):
     # move color towards bright fluoresence color when intensity = 1
@@ -461,7 +462,7 @@ def plot_tags(data, plot_config):
     check_plt_backend()
 
     n_snapshots = plot_config.get('n_snapshots', 6)
-    out_dir = plot_config.get('out_dir', 'out')
+    out_dir = plot_config.get('out_dir', False)
     filename = plot_config.get('filename', 'tags')
     agent_shape = plot_config.get('agent_shape', 'segment')
     background_color = plot_config.get('background_color', 'black')
@@ -587,11 +588,12 @@ def plot_tags(data, plot_config):
                 mappable.set_clim(min_tag, max_tag)
                 fig.colorbar(mappable, cax=cax, format='%.6f')
 
-    fig_path = os.path.join(out_dir, filename)
-    fig.subplots_adjust(wspace=0.7, hspace=0.1)
-    fig.savefig(fig_path, bbox_inches='tight')
-    plt.close(fig)
     plt.rcParams.update({'font.size': original_fontsize})
+    if out_dir:
+        fig_path = os.path.join(out_dir, filename)
+        fig.subplots_adjust(wspace=0.7, hspace=0.1)
+        fig.savefig(fig_path, bbox_inches='tight')
+        plt.close(fig)
 
 def initialize_spatial_figure(bounds, fontsize=18):
 
