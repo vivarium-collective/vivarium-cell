@@ -3,6 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.constants
 
+from iteround import saferound
+
 from vivarium.core.process import Process
 from vivarium.core.composition import (
     simulate_process_in_experiment,
@@ -61,17 +63,15 @@ class DiffusionNetwork(Process):
             node_id: {
                 'volume': {
                     '_default': 1.0,
-                    '_updater': 'set',
                 },
                 'length': {
                     '_default': 1.0,
-                    '_updater': 'set',
                 },
                 'molecules': {
                     '*': {
                         '_default': 0,
-                        '_updater': 'set',
                         '_emit': True,
+                        '_updater': 'accumulate',
                     }
                 },
             } for node_id in self.parameters['nodes']
@@ -79,55 +79,68 @@ class DiffusionNetwork(Process):
         return schema
 
     def next_update(self, timestep, state):
+
         # construct A matrix based off of graph, all edges assumed bidirectional
         for edge_id, edge in self.edges.items():
             node_index_1 = np.where(self.nodes == edge['nodes'][0])[0][0]
             node_index_2 = np.where(self.nodes == edge['nodes'][1])[0][0]
-            dx = state[edge['nodes'][0]]['length']/2 + state[edge['nodes'][1]]['length']/2
+            cross_sectional_area = edge['cross_sectional_area']
+            vol_1 = state[edge['nodes'][0]]['volume']
+            vol_2 = state[edge['nodes'][1]]['volume']
+            dx = state[edge['nodes'][0]]['length'] / 2 + state[edge['nodes'][1]]['length'] / 2
             diffusion_constants = array_from(self.diffusion_constants[edge_id])
             if 'diffusion_scaling_constant' in edge:
                 diffusion_constants *= edge['diffusion_scaling_constant']
             if 'diffusion_constants' in edge:
                 diffusion_constants = edge['diffusion_constants']
-            alpha = np.divide(np.multiply(diffusion_constants,
-                                          timestep), dx ** 2)
-            self.A[:, node_index_1, node_index_1] += alpha
-            self.A[:, node_index_2, node_index_2] += alpha
-            self.A[:, node_index_1, node_index_2] -= alpha
-            self.A[:, node_index_2, node_index_1] -= alpha
+            alpha = diffusion_constants * (cross_sectional_area / dx) * timestep
+            self.A[:, node_index_1, node_index_1] += alpha / vol_1
+            self.A[:, node_index_2, node_index_2] += alpha / vol_2
+            self.A[:, node_index_1, node_index_2] -= alpha / vol_1
+            self.A[:, node_index_2, node_index_1] -= alpha / vol_2
 
-        conc = np.asarray([np.multiply(array_from(state[node]['molecules']),
-                                       array_from(self.mw)) / state[node]['volume']
-                           for node in state])
-        conc_final = np.asarray([np.matmul(np.linalg.inv(a), conc[:, i])
-                                 for i, a in enumerate(self.A)]).T
         volumes = np.asarray(
             [state[node]['volume'] for node in state])
-        count_final = np.rint(np.asarray([np.divide(node * volumes[i],
-                                                    array_from(self.mw))
-                                          for i, node in enumerate(conc_final)]))
+        conc_initial = np.asarray([np.multiply(array_from(state[node]['molecules']),
+                                               array_from(self.mw)) / state[node]['volume']
+                                   for node in state])
+        conc_final = np.asarray([np.matmul(np.linalg.inv(a), conc_initial[:, i])
+                                 for i, a in enumerate(self.A)]).T
+        count_initial = np.asarray([array_from(state[node]['molecules'])
+                                    for node in state])
+        count_final = np.asarray([saferound(col, 0) for col in np.asarray(
+            [np.divide(node * volumes[i],
+                       array_from(self.mw))
+             for i, node in enumerate(conc_final)]).T]).T
+        delta = np.subtract(count_final, count_initial)
+
         update = {
             node_id: {
                 'molecules': array_to(self.molecule_ids,
-                                      count_final[np.where(self.nodes == node_id)[0][0]].astype(int)),
+                                      delta[np.where(self.nodes ==
+                                                     node_id)[0][0]].astype(int)),
             } for node_id in self.nodes
         }
         return update
 
 
 # functions to configure and run the process
+# TODO: change this to test and add asserts
 def run_diffusion_network_process(out_dir='out'):
     # initialize the process by passing initial_parameters
     n = int(1E6)
     molecule_ids = ['7', '6', '5', '4', '3', '2', '1', '0']
+    # molecule_ids = ['0']
     initial_parameters = {
         'nodes': ['cytosol_front', 'nucleoid', 'cytosol_rear'],
         'edges': {
             '1': {
                 'nodes': ['cytosol_front', 'nucleoid'],
+                'cross_sectional_area': np.pi * 0.4**2,
             },
             '2': {
                 'nodes': ['nucleoid', 'cytosol_rear'],
+                'cross_sectional_area': np.pi * 0.4 ** 2,
             },
             # '3': {
             #     'nodes': ['cytosol_front', 'cytosol_rear'],
@@ -143,7 +156,6 @@ def run_diffusion_network_process(out_dir='out'):
             '1': 10E-5,
             '0': 4E-5,
         },
-        'molecule_ids': molecule_ids,
         'mesh_size': 50,
     }
 
@@ -151,7 +163,7 @@ def run_diffusion_network_process(out_dir='out'):
 
     # run the simulation
     sim_settings = {
-        'total_time': 30,
+        'total_time': 10,
         'initial_state': {
             'cytosol_front': {
                 'length': 0.75,
@@ -162,7 +174,7 @@ def run_diffusion_network_process(out_dir='out'):
             },
             'nucleoid': {
                 'length': 0.75,
-                'volume': 0.3,
+                'volume': 0.6,
                 'molecules': {
                     mol_id: 0
                     for mol_id in molecule_ids}
@@ -191,10 +203,10 @@ def run_diffusion_network_process(out_dir='out'):
 # Plot functions
 def plot_nucleoid_diff(rp, output, out_dir):
     plt.figure()
-    plt.plot(rp*2, np.average(array_from(output['nucleoid']['molecules']), axis = 1)/1E6)
+    plt.plot(rp*2, np.average(array_from(output['nucleoid']['molecules']), axis=1)/1E6)
     plt.xlabel('Molecule size (nm)')
     plt.ylabel('Percentage of time in nucleoid (%)')
-    plt.ylim(0, 0.35)
+    # plt.ylim(0, 0.35)
     plt.title('Percentage occupancy in nucleoid over 30 min with mesh')
     out_file = out_dir + '/nucleoid_diff.png'
     plt.savefig(out_file)
