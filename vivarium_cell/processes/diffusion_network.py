@@ -114,6 +114,9 @@ class DiffusionNetwork(Process):
              for i, node in enumerate(conc_final)]).T]).T
         delta = np.subtract(count_final, count_initial)
 
+        assert (np.array_equal(np.ndarray.sum(count_initial, axis=0),
+                np.ndarray.sum(count_final, axis=0))), 'Molecule count is not conserved'
+
         update = {
             node_id: {
                 'molecules': array_to(self.molecule_ids,
@@ -124,9 +127,8 @@ class DiffusionNetwork(Process):
         return update
 
 
-# functions to configure and run the process
-# TODO: change this to test and add asserts
-def run_diffusion_network_process(out_dir='out'):
+# TODO: change this to multiple tests and add asserts
+def test_diffusion_network_process(out_dir='out'):
     # initialize the process by passing initial_parameters
     n = int(1E6)
     molecule_ids = ['7', '6', '5', '4', '3', '2', '1', '0']
@@ -136,7 +138,7 @@ def run_diffusion_network_process(out_dir='out'):
         'edges': {
             '1': {
                 'nodes': ['cytosol_front', 'nucleoid'],
-                'cross_sectional_area': np.pi * 0.4**2,
+                'cross_sectional_area': np.pi * 0.4 ** 2,
             },
             '2': {
                 'nodes': ['nucleoid', 'cytosol_rear'],
@@ -261,7 +263,15 @@ def plot_output(output, out_dir):
 # Diffusion constant functions
 def compute_diffusion_constants_from_mw(molecule_ids, r_p, mesh_size, edges):
     '''
-    Warnings: Temperature assumed to be 37°C.
+    Warnings: Temperature assumed to be 37°C. These values are all E. coli specific.
+
+    This function uses Einstein-Stokes to calculate a baseline diffusion constant
+    based on viscosities found in E. coli from tracking GFP diffusion. GFP is
+    significantly smaller than the range of mesh sizes, and is assumed to not
+    be impacted by the presence of a DNA polymer mesh. The diffusion constants
+    are then scaled using a mesh interference diffusion equation if the nucleoid
+    is one of the nodes in an edge. Molecule radii and mesh radii are in nm.
+    Viscosities are in cP. Temperature is in K.
 
     Sources:
     - Effective viscosities: Mullineaux et. al 2006, Microbial Cell Biology,
@@ -303,6 +313,29 @@ def compute_diffusion_constants_from_mw(molecule_ids, r_p, mesh_size, edges):
 
 def calculate_rp_from_mw(molecule_ids, mw):
     # pulled from spatial_tool.py in WCM
+    '''
+        This function compute the hydrodynamic diameter of a macromolecules from
+        its molecular weight. It is important to note that the hydrodynamic
+        diameter is mainly used for computation of diffusion constant, and can
+        be different from the observed diameter under microscopes or the radius
+        of gyration, especially for loose polymers such as RNAs. This function
+        is not E coli specific.
+
+        References: Bioinformatics (2012). doi:10.1093/bioinformatics/bts537
+
+        Args:
+            mw: molecular weight of the macromolecules, units: Daltons.
+            mtype: There are 5 possible mtype options: protein, RNA, linear_DNA,
+                circular_DNA, and supercoiled_DNA.
+
+        Returns: the hydrodynamic radius (in unit of nm) of the macromolecules
+            using the following formula
+            - rp = 0.0515*MW^(0.392) nm (Hong & Lei 2008) (protein)
+            - rp = 0.0566*MW^(0.38) nm (Werner 2011) (RNA)
+            - rp = 0.024*MW^(0.57) nm (Robertson et al 2006) (linear DNA)
+            - rp = 0.0125*MW^(0.59) nm (Robertson et al 2006) (circular DNA)
+            - rp = 0.0145*MW^(0.57) nm (Robertson et al 2006) (supercoiled DNA)
+        '''
     # TODO: find better way to do this for many molecule types
     dic_rp = {'protein': (0.0515, 0.392),
               'RNA': (0.0566, 0.38),
@@ -311,6 +344,7 @@ def calculate_rp_from_mw(molecule_ids, mw):
               'supercoiled_DNA': (0.0145, 0.57),
               }
 
+    # TODO: use different molecule types, currently uses protein assumption for all molecules
     r_p0, rp_power = dic_rp['protein']
     fg_to_kDa = 602217364.34
     r_p = np.multiply(r_p0, np.power(np.multiply(mw, fg_to_kDa), rp_power))
@@ -325,264 +359,6 @@ def array_to(keys, array):
     return {
         key: array[index]
         for index, key in enumerate(keys)}
-
-
-# The following functions are from spatial_tool.py in WCM for reference, written by Ray
-def compute_diffusion_constant_from_rp(rp,
-                                       loc = None,
-                                       temp = None,
-                                       parameters = None):
-    '''
-    Warning: The default values of the 'parameters' are E coli specific.
-
-    This is the same function as 'compute_diffusion_constant_from_mw'
-    except that it accepts the hydrodynamic radius of the macromolecules
-    as the input. All hypothesis and statements in
-    'compute_diffusion_constant_from_mw' apply here as well.
-
-    Args:
-        rp: the hydrodynamic radius of the macromolecule, units: nm.
-        loc: The location of the molecule: 'nucleoid' or 'cytoplasm'.
-        temp: The temperature of interest. unit: K.
-        parameters: The 4 parameters required to compute the diffusion
-            constant: xi, a, rh_nuc, rh_cyto.
-            The default values are E coli specific.
-
-    Returns:
-        dc: the diffusion constant of the macromolecule, units: um**2/sec
-    '''
-    if loc is None:
-        loc = 'cytosol'
-    temp = 300 * units.K
-    if parameters is None:
-        parameters = (0.51, 0.53, 42, 10)
-
-    # unpack constants required for the calculation
-    xi, a, rh_nuc, rh_cyto = parameters  # unit: nm, 1, nm, nm
-
-    # viscosity of water
-    a_visc = 2.414*10**(-5)*units.Pa*units.s  # unit: Pa*sec
-    b_visc = 247.8*units.K  # unit: K
-    c_visc = 140*units.K  # unit: K
-    eta_0 = a_visc*10**(b_visc/(temp - c_visc))  # unit: Pa*sec
-
-    # determine Rh
-    if loc == 'nucleoid':
-        rh = rh_nuc  # unit: nm
-    elif loc == 'cytoplasm':
-        rh = rh_cyto  # unit: nm
-    else:
-        raise NameError(
-            "The location can only be 'nucleoid' or 'cytoplasm'.")
-
-    if not isinstance(rp, Unum):
-        rp = units.nm * rp
-
-    # compute DC(diffusion constant)
-    dc_0 = K_B*temp/(6*np.pi*eta_0*rp)
-    dc = dc_0*np.exp(
-        -(xi**2/rh**2 + xi**2/rp.asNumber(units.nm)**2)**(-a/2))
-    return dc
-
-
-def compute_hydrodynamic_radius(mw, mtype = None):
-    '''
-    This function compute the hydrodynamic diameter of a macromolecules from
-    its molecular weight. It is important to note that the hydrodynamic
-    diameter is mainly used for computation of diffusion constant, and can
-    be different from the observed diameter under microscopes or the radius
-    of gyration, especially for loose polymers such as RNAs. This function
-    is not E coli specific.
-
-    References: Bioinformatics (2012). doi:10.1093/bioinformatics/bts537
-
-    Args:
-        mw: molecular weight of the macromolecules, units: Daltons.
-        mtype: There are 5 possible mtype options: protein, RNA, linear_DNA,
-            circular_DNA, and supercoiled_DNA.
-
-    Returns: the hydrodynamic radius (in unit of nm) of the macromolecules
-        using the following formula
-        - rp = 0.0515*MW^(0.392) nm (Hong & Lei 2008) (protein)
-        - rp = 0.0566*MW^(0.38) nm (Werner 2011) (RNA)
-        - rp = 0.024*MW^(0.57) nm (Robertson et al 2006) (linear DNA)
-        - rp = 0.0125*MW^(0.59) nm (Robertson et al 2006) (circular DNA)
-        - rp = 0.0145*MW^(0.57) nm (Robertson et al 2006) (supercoiled DNA)
-    '''
-    if mtype is None:
-        mtype = 'protein'
-
-    dic_rp = {'protein': (0.0515, 0.392),
-                'RNA': (0.0566, 0.38),
-                'linear_DNA': (0.024, 0.57),
-                'circular_DNA': (0.0125, 0.59),
-                'supercoiled_DNA': (0.0145, 0.57),
-                }
-
-    if isinstance(mw, Unum):
-        mw_unitless = mw.asNumber(units.g / units.mol)
-    else:
-        mw_unitless = mw
-
-    if mtype in dic_rp:
-        rp_0, rp_power = dic_rp[mtype]
-    else:
-        raise KeyError("The input 'mtype' should be one of the following 5 "
-                        "options: 'protein', 'RNA', 'linear_DNA', "
-                        "'circular_DNA', 'supercoiled_DNA'.")
-
-    rp = rp_0*mw_unitless**rp_power
-    rp = units.nm*rp
-    return rp
-
-
-def compute_diffusion_constant_from_mw(mw, mtype = None,
-                                       loc = None,
-                                       temp = None,
-                                       parameters = None):
-    '''
-    Warning: The default values of the 'parameters' are E coli specific.
-
-    This function computes the hypothesized diffusion constant of
-    macromolecules within the nucleoid and the cytoplasm region.
-    In literature, there is no known differentiation between the diffusion
-    constant of a molecule in the nucleoid and in the cytoplasm up to the
-    best of our knowledge in 2019. However, there is a good reason why we
-    can assume that previously reported diffusion constant are in fact the
-    diffusion constant of a protein in the nucleoid region:
-    (1) The image traces of a protein within a bacteria usually cross the
-        nucleoid regions.
-    (2) The nucleoid region, compared to the cytoplasm, should be the main
-    limiting factor restricting the magnitude of diffusion constant.
-    (3) The same theory of diffusion constant has been implemented to
-    mammalian cells, and the term 'rh', the average hydrodynamic radius of
-    the biggest crowders, are different in mammalian cytoplasm, and it seems
-    to reflect the hydrodynamic radius of the actin filament (note: the
-    hydrodynamic radius of actin filament should be computed based on the
-    average length of actin fiber, and is not equal to the radius of the
-    actin filament itself.) (ref: Nano Lett. 2011, 11, 2157-2163).
-    As for E coli, the 'rh' term = 40nm, which may correspond to the 80nm
-    DNA fiber. On the other hand, for the diffusion constant of E coli in
-    the true cytoplasm, we will expect the value of 'rh' term to be
-    approximately 10 nm, which correspond to the radius of active ribosomes.
-
-    However, all the above statements are just hypothesis. If you want to
-    compute the diffusion constant of a macromolecule in the whole E coli
-    cell, you should set loc = 'nucleoid': the formula for this is obtained
-    from actual experimental data set. When you set loc = 'cytoplasm', the
-    entire results are merely hypothesis.
-
-    Ref: Kalwarczyk, T., Tabaka, M. & Holyst, R.
-    Bioinformatics (2012). doi:10.1093/bioinformatics/bts537
-
-    D_0 = K_B*T/(6*pi*eta_0*rp)
-    ln(D_0/D_cyto) = ln(eta/eta_0) = (xi^2/Rh^2 + xi^2/rp^2)^(-a/2)
-    D_0 = the diffusion constant of a macromolecule in pure solvent
-    eta_0 = the viscosity of pure solvent, in this case, water
-    eta = the size-dependent viscosity experienced by the macromolecule.
-    xi = average distance between the surface of proteins
-    rh = average hydrodynamic radius of the biggest crowders
-    a = some constant of the order of 1
-    rp = hydrodynamic radius of probed molecule
-
-    In this formula, since we allow the changes in temperature, we also
-    consider the viscosity changes of water under different temperature:
-    Ref: Dortmund Data Bank
-    eta_0 = A*10^(B/(T-C))
-    A = 2.414*10^(-5) Pa*sec
-    B = 247.8 K
-    C = 140 K
-
-    Args:
-        mw: molecular weight(unit: Da) of the macromolecule
-        mtype: There are 5 possible mtype options: protein, RNA, linear_DNA,
-        circular_DNA, and supercoiled_DNA.
-        loc: The location of the molecule: 'nucleoid' or 'cytoplasm'.
-        temp: The temperature of interest. unit: K.
-        parameters: The 4 parameters required to compute the diffusion
-            constant: xi, a, rh_nuc, rh_cyto.
-            The default values are E coli specific.
-
-    Returns:
-        dc: the diffusion constant of the macromolecule, units: um**2/sec
-    '''
-    if mtype is None:
-        mtype = 'protein'
-    if loc is None:
-        loc = 'nucleoid'
-    if temp is None:
-        temp = 300 * units.K
-    if parameters is None:
-        parameters = (0.51, 0.53, 42, 10)
-
-    rp = compute_hydrodynamic_radius(mw, mtype = mtype)
-    dc = compute_diffusion_constant_from_rp(rp,
-                                       loc = loc,
-                                       temp = temp,
-                                       parameters = parameters)
-    return dc
-
-
-def compute_nucleoid_size(l_cell, d_cell,
-                          length_scaling_parameters = None,
-                          nucleoid_area_ratio = None):
-    '''
-    Warning 1: This function contains default values that are specific to
-    E coli grew on M9 media under aerobic condition only. The shape and size
-    of nucleoid of a bacteria can be very different across species.
-    Warning 2: This function is not suitable to compute the nucleoid size of
-    E coli when its shape turn filamentaous. This is because the scaling
-    formula of the length of the nucleoid is obtained from a dnaC mutant
-    E coli strain. According to our reference, when the cells are allowed
-    to replicate their DNA normally, a constant N/C area ratio is maintained
-    even for filamentous variants (treated with cephalexin). However, if the
-    DNA is not allowed to replicate, the N/C area ratio will decrease as the
-    cell elongate. It is therefore recommended to carefully examine the
-    condition when the length of the cells grow beyond 3 um.
-    Warning 3: the default values of length_scaling_parameters and
-    nucleoid_area_ratio are set to be E coli specific, grew on M9 media
-    under aerobic condition. The N/C area ratio for E coli grew on LB under
-    aerobic condition is close to 0.4. For E coli grew under anaerobic
-    condition it is close to 0.5.
-    Warning 4: It is also important to note that a single cell can contain
-    more than 1 nucleoid, and this formula may not be suitable for these
-    cases.
-
-    Reference on nucleoid length:
-    Wu, F. et al. Curr. Biol. (2019). doi:10.1016/j.cub.2019.05.015
-    Reference on nucleoid/cytoplasm area ratio:
-    Gray, W. T. et al. Cell (2019). doi:10.1016/j.cell.2019.05.017
-
-    Args:
-        l_cell: the length of the cell, in units of um
-        d_cell: the width of the cell, in units of um
-        length_scaling_parameters: the parameters used for the scaling
-            formula of the length of the nucleoid with respect to the length
-            of the whole cell.
-        nucleoid_area_ratio: the nucleoid/cytoplasm area ratio measured
-            under microscope.
-    Returns:
-        l_nuc: the length of the nucleoid
-        d_nuc: the diameter of the nucleoid
-    '''
-    if length_scaling_parameters is None:
-        length_scaling_parameters = (6.6, 8.3)
-    if nucleoid_area_ratio is None:
-        nucleoid_area_ratio = 0.60
-
-    l_sat, l_c = length_scaling_parameters # unit: um
-    if isinstance(l_cell, Unum):
-        l_cell = l_cell.asNumber(units.um)
-    if isinstance(d_cell, Unum):
-        d_cell = d_cell.asNumber(units.um)
-    if isinstance(l_sat, Unum):
-        l_sat = l_sat.asNumber(units.um)
-    if isinstance(l_c, Unum):
-        l_c = l_c.asNumber(units.um)
-
-    l_nuc = l_sat * (1 - np.exp(-l_cell / l_c))
-    d_nuc = nucleoid_area_ratio * l_cell * d_cell / l_nuc
-    return units.um*l_nuc, units.um*d_nuc
 
 
 # run module is run as the main program with python vivarium/process/template_process.py
