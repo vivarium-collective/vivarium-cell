@@ -38,6 +38,7 @@ class AntibioticTransport(ConvenienceKinetics):
         'initial_internal_antibiotic': 0,
         'initial_external_antibiotic': 1,
         'initial_pump': 1,
+        'global_deriver_key': 'global_deriver',
     }
 
     def __init__(self, initial_parameters=None):
@@ -87,7 +88,8 @@ class AntibioticTransport(ConvenienceKinetics):
                     parameters['pump_key']: parameters['initial_pump'],
                 },
             },
-            'port_ids': ['internal', 'external', 'pump_port']
+            'port_ids': ['internal', 'external', 'pump_port'],
+            'global_deriver_key': parameters['global_deriver_key'],
         }
 
         super(AntibioticTransport, self).__init__(kinetics_parameters)
