@@ -43,7 +43,8 @@ class GrowthRate(Process):
     name = NAME
     defaults = {
         'growth_rate': 0.0005,
-        'biomass_mw': AVOGADRO * units.fg / units.mol,
+        'mw': {
+            'biomass': AVOGADRO * units.fg / units.mol},
         'global_deriver_key': 'globals_deriver',
         'mass_deriver_key': 'mass_deriver',
     }
@@ -54,29 +55,25 @@ class GrowthRate(Process):
     def initial_state(self, config=None):
         if config is None:
             config = {}
-        initial_mass = config.get(
-            'initial_mass', 1339)
+        initial_mass = config.get('initial_mass', 1339)
+        # TODO -- divide up molecules to get initial_mass
         return {
             'molecules': {
-                'biomass': initial_mass
-            },
-            'global': {
-                'growth_rate': self.parameters['growth_rate'],
-            }
+                molecule: initial_mass
+            } for molecule in self.parameters['mw']
         }
 
     def ports_schema(self):
         return {
             'molecules': {
-                'biomass': {
+                molecule: {
                     '_emit': True,
                     '_default': 1.0,
-                    '_updater': 'set',
                     '_divider': 'split',
                     '_properties': {
-                        'mw': self.parameters['biomass_mw']
+                        'mw': mw
                     }
-                }
+                } for molecule, mw in self.parameters['mw'].items()
             },
             'global': {
                 'growth_rate': {
@@ -96,16 +93,15 @@ class GrowthRate(Process):
         }
 
     def next_update(self, timestep, states):
-        biomass = states['molecules']['biomass']
+        molecules = states['molecules']
         growth_rate = states['global']['growth_rate']
-        new_mass = biomass * np.exp(growth_rate * timestep)
+        molecules_update = {}
+        for molecule, value in molecules.items():
+            molecules_update[molecule] = value * np.exp(growth_rate * timestep) - value
+
         return {
-            'molecules': {
-                'biomass': new_mass
-            }
+            'molecules': molecules_update
         }
-
-
 
 
 def test_growth_rate():
