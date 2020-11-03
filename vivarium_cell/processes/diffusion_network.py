@@ -25,6 +25,7 @@ class DiffusionNetwork(Process):
         'mw': {},   # in fg
         'mesh_size': 50,    # in nm
         'time_step': 0.1,     # in s
+        'radii': {},        # nm
     }
 
     def __init__(self, parameters=None):
@@ -34,12 +35,18 @@ class DiffusionNetwork(Process):
         self.mw = self.parameters['mw']
         self.molecule_ids = self.parameters['mw'].keys()
         self.mesh_size = self.parameters['mesh_size']
+        self.radii = self.parameters['radii']
+        self.remainder = np.zeros((len(self.nodes), len(self.molecule_ids)))
 
         # get molecule radii by molecular weights
-        self.rp = calculate_rp_from_mw(self.molecule_ids, array_from(self.mw))
+        self.rp = calculate_rp_from_mw(self.molecule_ids, self.mw)
+
+        molecule_ids = np.asarray(list(self.molecule_ids))
+        for mol_id, r in self.radii.items():
+            self.rp[np.where(molecule_ids == mol_id)[0][0]] = r
 
         # get diffusion constants per molecule
-        self.diffusion_constants = compute_diffusion_constants_from_mw(
+        self.diffusion_constants = compute_diffusion_constants_from_rp(
             self.molecule_ids, self.rp, self.mesh_size, self.edges)
 
 
@@ -61,6 +68,7 @@ class DiffusionNetwork(Process):
             node_id: {
                 'volume': {
                     '_default': 1.0,
+                    '_emit': True,
                 },
                 'length': {
                     '_default': 1.0,
@@ -100,17 +108,21 @@ class DiffusionNetwork(Process):
 
         volumes = np.asarray(
             [state[node]['volume'] for node in state])
-        conc_initial = np.asarray([np.multiply(array_from(state[node]['molecules']),
-                                               array_from(self.mw)) / state[node]['volume']
-                                   for node in state])
+        conc_initial = np.asarray(
+            [np.multiply(array_from(state[node]['molecules']),
+                         array_from(self.mw)) / state[node]['volume']
+             for node in state])
         conc_final = np.asarray([np.matmul(np.linalg.inv(a), conc_initial[:, i])
                                  for i, a in enumerate(A)]).T
         count_initial = np.asarray([array_from(state[node]['molecules'])
                                     for node in state])
-        count_final = np.asarray([saferound(col, 0) for col in np.asarray(
+        count_final_unrounded = np.asarray(
             [np.divide(node * volumes[i],
                        array_from(self.mw))
-             for i, node in enumerate(conc_final)]).T]).T
+             for i, node in enumerate(conc_final)]) + self.remainder
+        count_final = np.asarray([saferound(col, 0) for col in
+                                  count_final_unrounded.T]).T
+        self.remainder = count_final_unrounded - count_final
         delta = np.subtract(count_final, count_initial)
 
         assert (np.array_equal(np.ndarray.sum(count_initial, axis=0),
@@ -130,8 +142,8 @@ class DiffusionNetwork(Process):
 def test_diffusion_network_process(out_dir='out'):
     # initialize the process by passing initial_parameters
     n = int(1E6)
-    molecule_ids = ['7', '6', '5', '4', '3', '2', '1', '0']
-    # molecule_ids = ['0']
+    # molecule_ids = ['largest_polyribosome_RNA', '6_RNA', '5_RNA', '4', '3', 'ribosome_RNA', '1', 'GFP']
+    molecule_ids = ['10', '9', '8', '7', '6', '5', '4', '3', '2', '1', '0']
     initial_parameters = {
         'nodes': ['cytosol_front', 'nucleoid', 'cytosol_rear'],
         'edges': {
@@ -145,12 +157,26 @@ def test_diffusion_network_process(out_dir='out'):
             },
             # '3': {
             #     'nodes': ['cytosol_front', 'cytosol_rear'],
+            #     'cross_sectional_area': np.pi * 0.3 ** 2,
             # }
             },
+        # 'mw': {
+        #     'largest_polyribosome': 0.04,
+        #     '6_RNA': 9000E-5,
+        #     '5_RNA': 5000E-5,
+        #     '4': 2000E-5,
+        #     '3': 1000E-5,
+        #     'ribosome_RNA': 300E-5,
+        #     '1': 10E-5,
+        #     'GFP': 4.5E-5,
+        # },
         'mw': {
-            '7': 20000E-5,
-            '6': 9000E-5,
-            '5': 5000E-5,
+            '10': 20000E-5,
+            '9': 9000E-5,
+            '8': 5000E-5,
+            '7': 4000E-5,
+            '6': 3000E-5,
+            '5': 2500E-5,
             '4': 2000E-5,
             '3': 1000E-5,
             '2': 100E-5,
@@ -158,6 +184,10 @@ def test_diffusion_network_process(out_dir='out'):
             '0': 4E-5,
         },
         'mesh_size': 50,
+        # 'radii': {
+        #     '1': 20,
+        #     '2': 30,
+        # },
     }
 
     diffusion_network_process = DiffusionNetwork(initial_parameters)
@@ -187,7 +217,7 @@ def test_diffusion_network_process(out_dir='out'):
                     mol_id: 0
                     for mol_id in molecule_ids}
             },
-        }
+        },
     }
 
     output = simulate_process_in_experiment(diffusion_network_process, sim_settings)
@@ -204,10 +234,9 @@ def test_diffusion_network_process(out_dir='out'):
 # Plot functions
 def plot_nucleoid_diff(rp, output, out_dir):
     plt.figure()
-    plt.plot(rp*2, np.average(array_from(output['nucleoid']['molecules']), axis=1)/1E6)
+    plt.plot(np.multiply(rp, 2), np.average(array_from(output['nucleoid']['molecules']), axis=1)/1E6)
     plt.xlabel('Molecule size (nm)')
     plt.ylabel('Percentage of time in nucleoid (%)')
-    # plt.ylim(0, 0.35)
     plt.title('Percentage occupancy in nucleoid over 30 min with mesh')
     out_file = out_dir + '/nucleoid_diff.png'
     plt.savefig(out_file)
@@ -215,8 +244,8 @@ def plot_nucleoid_diff(rp, output, out_dir):
 
 def plot_diff_range(diffusion_constants, rp, out_dir):
     plt.figure()
-    plt.plot(rp * 2, array_from(diffusion_constants['1']))
-    plt.plot(rp * 2, array_from(diffusion_constants['3']))
+    plt.plot(np.multiply(rp, 2), array_from(diffusion_constants['1']), color='#d8b365')
+    plt.plot(np.multiply(rp, 2), array_from(diffusion_constants['3']), color='#5ab4ac')
     plt.yscale('log')
     plt.xlabel(r'Molecule size ($nm$)')
     plt.ylabel(r'Diffusion constant ($\mu m^2/s$)')
@@ -228,14 +257,20 @@ def plot_diff_range(diffusion_constants, rp, out_dir):
 
 def plot_radius_range(rp, output, out_dir):
     plt.figure()
+    colors = ['#543005', '#8c510a', '#bf812d', '#dfc27d', '#f6e8c3', '#f5f5f5',
+              '#c7eae5', '#80cdc1', '#35978f', '#01665e', '#003c30']
+    # time = np.divide(output['time'], 60)
+    time = output['time']
     for i in range(len(output['nucleoid']['molecules'])):
-        plt.plot(output['time'], array_from(output['nucleoid']['molecules'])[i])
+        plt.plot(time,
+                 array_from(output['nucleoid']['molecules'])[i], color=colors[i])
     size_str = np.rint(np.multiply(rp, 2))
-    plt.legend(['size = ' + str(size) + ' nm' for size in size_str], loc = 'lower right')
+    plt.legend(['size = ' + str(size) + ' nm' for size in size_str], loc='lower right')
     plt.xlabel('time (s)')
     plt.ylabel('Number of molecules')
     plt.title('Brownian diffusion into nucleoid with mesh')
     out_file = out_dir + '/radius_range.png'
+    plt.tight_layout()
     plt.savefig(out_file)
 
 
@@ -306,14 +341,13 @@ def compute_diffusion_constants_from_mw(molecule_ids, r_p, mesh_size, edges):
             dc = np.multiply(dc, np.exp(np.multiply((-np.pi / 4),
                                         np.divide(r_p, r_o)**2)))
         diffusion_constants[edge_id] = array_to(molecule_ids, dc)
-
     return diffusion_constants
 
 
 def calculate_rp_from_mw(molecule_ids, mw):
     # pulled from spatial_tool.py in WCM
     '''
-        This function compute the hydrodynamic diameter of a macromolecules from
+        This function compute the hydrodynamic radius of a macromolecules from
         its molecular weight. It is important to note that the hydrodynamic
         diameter is mainly used for computation of diffusion constant, and can
         be different from the observed diameter under microscopes or the radius
@@ -346,8 +380,125 @@ def calculate_rp_from_mw(molecule_ids, mw):
     # TODO: use different molecule types, currently uses protein assumption for all molecules
     r_p0, rp_power = dic_rp['protein']
     fg_to_kDa = 602217364.34
-    r_p = np.multiply(r_p0, np.power(np.multiply(mw, fg_to_kDa), rp_power))
+    r_p_protein = np.multiply(
+            r_p0, np.power(np.multiply(array_from(mw), fg_to_kDa), rp_power))
+    r_p0, rp_power = dic_rp['RNA']
+    r_p_RNA = np.multiply(
+            r_p0, np.power(np.multiply(array_from(mw), fg_to_kDa), rp_power))
+
+    r_p = [r_p_RNA[i] if ('RNA' in mol_id) else r_p_protein[i]
+           for i, mol_id in enumerate(molecule_ids)]
     return r_p
+
+# This function is modified from spatial_tool.py from WCM
+def compute_diffusion_constants_from_rp(molecule_ids, rp, mesh_size, edges,
+                                       temp = None, parameters = None):
+    '''
+        Warning: The default values of the 'parameters' are E coli specific.
+
+        This function computes the hypothesized diffusion constant of
+        macromolecules within the nucleoid and the cytoplasm region.
+        In literature, there is no known differentiation between the diffusion
+        constant of a molecule in the nucleoid and in the cytoplasm up to the
+        best of our knowledge in 2019. However, there is a good reason why we
+        can assume that previously reported diffusion constant are in fact the
+        diffusion constant of a protein in the nucleoid region:
+        (1) The image traces of a protein within a bacteria usually cross the
+            nucleoid regions.
+        (2) The nucleoid region, compared to the cytoplasm, should be the main
+        limiting factor restricting the magnitude of diffusion constant.
+        (3) The same theory of diffusion constant has been implemented to
+        mammalian cells, and the term 'rh', the average hydrodynamic radius of
+        the biggest crowders, are different in mammalian cytoplasm, and it seems
+        to reflect the hydrodynamic radius of the actin filament (note: the
+        hydrodynamic radius of actin filament should be computed based on the
+        average length of actin fiber, and is not equal to the radius of the
+        actin filament itself.) (ref: Nano Lett. 2011, 11, 2157-2163).
+        As for E coli, the 'rh' term = 40nm, which may correspond to the 80nm
+        DNA fiber. On the other hand, for the diffusion constant of E coli in
+        the true cytoplasm, we will expect the value of 'rh' term to be
+        approximately 10 nm, which correspond to the radius of active ribosomes.
+
+        However, all the above statements are just hypothesis. If you want to
+        compute the diffusion constant of a macromolecule in the whole E coli
+        cell, you should set loc = 'nucleoid': the formula for this is obtained
+        from actual experimental data set. When you set loc = 'cytoplasm', the
+        entire results are merely hypothesis.
+
+        Ref: Kalwarczyk, T., Tabaka, M. & Holyst, R.
+        Bioinformatics (2012). doi:10.1093/bioinformatics/bts537
+
+        D_0 = K_B*T/(6*pi*eta_0*rp)
+        ln(D_0/D_cyto) = ln(eta/eta_0) = (xi^2/Rh^2 + xi^2/rp^2)^(-a/2)
+        D_0 = the diffusion constant of a macromolecule in pure solvent
+        eta_0 = the viscosity of pure solvent, in this case, water
+        eta = the size-dependent viscosity experienced by the macromolecule.
+        xi = average distance between the surface of proteins
+        rh = average hydrodynamic radius of the biggest crowders
+        a = some constant of the order of 1
+        rp = hydrodynamic radius of probed molecule
+
+        In this formula, since we allow the changes in temperature, we also
+        consider the viscosity changes of water under different temperature:
+        Ref: Dortmund Data Bank
+        eta_0 = A*10^(B/(T-C))
+        A = 2.414*10^(-5) Pa*sec
+        B = 247.8 K
+        C = 140 K
+
+        Args:
+            mw: molecular weight(unit: Da) of the macromolecule
+            mtype: There are 5 possible mtype options: protein, RNA, linear_DNA,
+            circular_DNA, and supercoiled_DNA.
+            temp: The temperature of interest. unit: K.
+            parameters: The 4 parameters required to compute the diffusion
+                constant: xi, a, rh_cyto.
+                The default values are E coli specific.
+
+        Returns:
+            dc: the diffusion constant of the macromolecule, units: um**2/sec
+        '''
+    if temp is None:
+        temp = 310.15
+    if parameters is None:
+        parameters = (0.51, 0.53, 10)
+
+    # unpack constants required for the calculation
+    xi, a, rh_cyto = parameters  # unit: nm, 1, nm
+
+    ro = mesh_size/2
+    rh = rh_cyto
+    diffusion_constants = {}
+    K_B = scipy.constants.Boltzmann  # Boltzmann constant, unit: J/K
+
+    # viscosity of water
+    a_visc = 2.414*10**(-5)  # unit: Pa*sec
+    b_visc = 247.8  # unit: K
+    c_visc = 140  # unit: K
+    eta_0 = a_visc*10**(b_visc/(temp - c_visc))  # unit: Pa*sec
+
+    # conversions
+    m2_to_um2 = 1E12
+    nm_to_m = 1E-9
+
+    # compute DC (diffusion constant)
+    dc_0 = np.multiply(
+        np.divide(K_B*temp, np.multiply(6*np.pi*eta_0*nm_to_m, rp)), m2_to_um2)
+    dc = np.multiply(dc_0, np.exp(
+        -np.power(np.add(xi**2/rh**2, np.divide(xi**2, np.square(rp))), (-a/2))))
+
+    # compute impact from mesh when nucleoid is a node
+    dc_nuc = np.multiply(dc, np.exp(np.multiply((-np.pi / 4),
+                                                np.square(np.divide(rp, ro)))))
+
+    for edge_id, edge in edges.items():
+        if 'nucleoid' in edge['nodes']:
+            diffusion_constants[edge_id] = array_to(molecule_ids, dc_nuc)
+        else:
+            diffusion_constants[edge_id] = array_to(molecule_ids, dc)
+
+    return diffusion_constants
+
 
 # Helper functions
 def array_from(d):
