@@ -68,9 +68,10 @@ def get_minimal_media_iAF1260b(
 ):
     config = get_iAF1260b_config()
     metabolism = Metabolism(config)
+    initial_state = metabolism.initial_state()
     molecules = {
         mol_id: conc * scale_concentration
-        for mol_id, conc in metabolism.initial_state['external'].items()
+        for mol_id, conc in initial_state['external'].items()
     }
     for mol_id, conc in override_initial.items():
         molecules[mol_id] = conc
@@ -177,9 +178,21 @@ class Metabolism(Process):
                 else:
                     self.objective_composition[mol_id] = coeff1 * coeff2
 
+        # parameters
+        parameters = {'time_step': time_step}
+        parameters.update(initial_parameters)
+
+        self.global_deriver_key = self.or_default(
+            initial_parameters, 'global_deriver_key')
+        self.mass_deriver_key = self.or_default(
+            initial_parameters, 'mass_deriver_key')
+
+        super(Metabolism, self).__init__(parameters)
+
+    def initial_state(self, config=None):
+
         ## Get initial internal state from initial_mass
-        initial_metabolite_mass = self.or_default(
-            initial_parameters, 'initial_mass')
+        initial_metabolite_mass = self.parameters['initial_mass']
         mw = self.fba.molecular_weights
         composition = {
             mol_id: (-coeff if coeff < 0 else 0)
@@ -196,23 +209,12 @@ class Metabolism(Process):
         external_state.update(self.fba.minimal_external)  # optimal minimal media from fba
 
         # save initial state
-        self.initial_state = {
+        return {
             'external': external_state,
             'internal': internal_state,
             'flux_bounds': {reaction_id: self.default_upper_bound
                             for reaction_id in self.constrained_reaction_ids},
         }
-
-        # parameters
-        parameters = {'time_step': time_step}
-        parameters.update(initial_parameters)
-
-        self.global_deriver_key = self.or_default(
-            initial_parameters, 'global_deriver_key')
-        self.mass_deriver_key = self.or_default(
-            initial_parameters, 'mass_deriver_key')
-
-        super(Metabolism, self).__init__(parameters)
 
     def ports_schema(self):
         ports = [
@@ -227,10 +229,12 @@ class Metabolism(Process):
 
         schema = {port: {} for port in ports}
 
+        initial_state = self.initial_state()
+
         # internal
         for state in list(self.objective_composition.keys()):
             schema['internal'][state] = {
-                '_value': self.initial_state['internal'].get(state, 0),
+                '_value': initial_state['internal'].get(state, 0),
                 '_divider': 'split',
                 '_default': 0.0,
                 '_emit': True,
@@ -241,7 +245,7 @@ class Metabolism(Process):
         # external
         for state in self.fba.external_molecules:
             schema['external'][state] = {
-                '_default': self.initial_state['external'].get(state, 0.0),
+                '_default': initial_state['external'].get(state, 0.0),
                 '_emit': True,
             }
 
@@ -262,7 +266,7 @@ class Metabolism(Process):
         # flux_bounds
         for state in self.constrained_reaction_ids:
             schema['flux_bounds'][state] = {
-                '_default': self.initial_state['flux_bounds'].get(state, self.default_upper_bound),
+                '_default': initial_state['flux_bounds'].get(state, self.default_upper_bound),
                 '_emit': True,
             }
 
