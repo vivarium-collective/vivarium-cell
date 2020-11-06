@@ -358,7 +358,7 @@ def plot_snapshots(data, plot_config):
     # make the figure
     n_rows = max(len(field_ids), 1)
     n_cols = n_snapshots + 1  # one column for the colorbar
-    figsize = (12 * n_cols, 12 * n_rows)
+    figsize = (10 * n_cols, 10 * n_rows)
     max_dpi = min([2**16 // dim for dim in figsize]) - 1
     fig = plt.figure(figsize=figsize, dpi=min(max_dpi, 100))
     grid = plt.GridSpec(n_rows, n_cols, wspace=0.2, hspace=0.2)
