@@ -56,6 +56,7 @@ class CellEnvironmentDiffusionFicks(Process):
                 molecule: {
                     '_default': np.full(
                         (1, 1), self.parameters['default_default']),
+                    '_divider': 'no_divide',
                 }
                 for molecule in self.parameters['molecules_to_diffuse']
             },
@@ -74,12 +75,15 @@ class CellEnvironmentDiffusionFicks(Process):
             'dimensions': {
                 'bounds': {
                     '_default': [1, 1],
+                    '_divider': 'no_divide',
                 },
                 'n_bins': {
                     '_default': [1, 1],
+                    '_divider': 'no_divide',
                 },
                 'depth': {
                     '_default': 1,
+                    '_divider': 'no_divide',
                 },
             },
         }

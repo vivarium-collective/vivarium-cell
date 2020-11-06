@@ -34,7 +34,6 @@ HUES = [
     ]
 DEFAULT_HUE = HUES[0]
 DEFAULT_SV = [100.0/100.0, 70.0/100.0]
-BASELINE_TAG_COLOR = [220/360, 1.0, 0.2]  # HSV
 FLOURESCENT_SV = [0.75, 1.0]  # SV for fluorescent colors
 
 def check_plt_backend():
@@ -62,7 +61,20 @@ class LineWidthData(Line2D):
 
     _linewidth = property(_get_lw, _set_lw)
 
-def plot_agent(ax, data, color, agent_shape):
+def plot_agent(
+        ax, data, color, agent_shape, membrane_width=0.1,
+        membrane_color=[1, 1, 1],
+    ):
+    '''Plot an agent
+
+    Args:
+        ax: The axes to draw on.
+        data (dict): The agent data dictionary.
+        color (list): HSV color of agent body.
+        agent_shape (str): One of ``rectangle``, ``segment``, and ``circle``.
+        membrane_width (float): Width of drawn agent boundary.
+        membrane_color (list): RGB color of drawn agent boundary.
+    '''
     x_center = data['boundary']['location'][0]
     y_center = data['boundary']['location'][1]
 
@@ -88,8 +100,8 @@ def plot_agent(ax, data, color, agent_shape):
         shape = patches.Rectangle(
             (x, y), width, length,
             angle=theta,
-            linewidth=2,
-            edgecolor='w',
+            linewidth=membrane_width,
+            edgecolor=membrane_color,
             facecolor=rgb
         )
         ax.add_patch(shape)
@@ -99,8 +111,6 @@ def plot_agent(ax, data, color, agent_shape):
         length = data['boundary']['length']
         width = data['boundary']['width']
 
-        membrane_width = 0.1
-        membrane_color = [1, 1, 1]
         radius = width / 2
 
         # get the two ends
@@ -137,26 +147,40 @@ def plot_agent(ax, data, color, agent_shape):
         y = y_center - radius
 
         # Create a circle
-        circle = patches.Circle((x, y), radius, linewidth=1, edgecolor='b')
+        circle = patches.Circle(
+            (x, y), radius, linewidth=membrane_width,
+            edgecolor=membrane_color,
+        )
         ax.add_patch(circle)
 
 def plot_agents(
-    ax, agents, agent_colors={}, agent_shape='segment', dead_color=None
+    ax, agents, agent_colors=None, agent_shape='segment', dead_color=None,
+    membrane_width=0.1, membrane_color=[1, 1, 1],
 ):
+    '''Plot agents.
+
+    Args:
+        ax: the axis for plot
+        agents (dict): a mapping from agent ID to that agent's data,
+            which should have keys ``location``, ``angle``, ``length``,
+            and ``width``.
+        agent_colors (dict): Mapping from agent ID to HSV color.
+        dead_color (list): List of 3 floats that define HSV color to use
+            for dead cells. Dead cells only get treated differently if
+            this is set.
+        membrane_width (float): Width of agent outline to draw.
+        membrane_color (list): List of 3 floats that define the RGB
+            color to use for agent outlines.
     '''
-    - ax: the axis for plot
-    - agents: a dict with {agent_id: agent_data} and
-        agent_data a dict with keys location, angle, length, width
-    - agent_colors: dict with {agent_id: hsv color}
-    - dead_color: List of 3 floats that define HSV color to use for dead
-      cells. Dead cells only get treated differently if this is set.
-    '''
+    if not agent_colors:
+        agent_colors = dict()
     for agent_id, agent_data in agents.items():
         color = agent_colors.get(agent_id, [DEFAULT_HUE]+DEFAULT_SV)
         if dead_color and 'boundary' in agent_data and 'dead' in agent_data['boundary']:
             if agent_data['boundary']['dead']:
                 color = dead_color
-        plot_agent(ax, agent_data, color, agent_shape)
+        plot_agent(ax, agent_data, color, agent_shape, membrane_width,
+                membrane_color)
 
 def mutate_color(baseline_hsv):
     mutation = 0.1
@@ -267,7 +291,7 @@ def plot_snapshots(data, plot_config):
     check_plt_backend()
 
     n_snapshots = plot_config.get('n_snapshots', 6)
-    out_dir = plot_config.get('out_dir', 'out')
+    out_dir = plot_config.get('out_dir', False)
     filename = plot_config.get('filename', 'snapshots')
     agent_shape = plot_config.get('agent_shape', 'segment')
     phylogeny_names = plot_config.get('phylogeny_names', True)
@@ -393,27 +417,13 @@ def plot_snapshots(data, plot_config):
                 agents_now = agents[time]
                 plot_agents(ax, agents_now, agent_colors, agent_shape, dead_color)
 
-    fig_path = os.path.join(out_dir, filename)
-    fig.subplots_adjust(wspace=0.7, hspace=0.1)
-    fig.savefig(fig_path, bbox_inches='tight')
-    plt.close(fig)
     plt.rcParams.update({'font.size': original_fontsize})
+    if out_dir:
+        fig_path = os.path.join(out_dir, filename)
+        fig.subplots_adjust(wspace=0.7, hspace=0.1)
+        fig.savefig(fig_path, bbox_inches='tight')
+        plt.close(fig)
 
-def get_fluorescent_color(baseline_hsv, tag_color, intensity):
-    # move color towards bright fluoresence color when intensity = 1
-    new_hsv = baseline_hsv[:]
-    distance = [a - b for a, b in zip(tag_color, new_hsv)]
-
-    # if hue distance > 180 degrees, go around in the other direction
-    if distance[0] > 0.5:
-        distance[0] = 1 - distance[0]
-    elif distance[0] < -0.5:
-        distance[0] = 1 + distance[0]
-
-    new_hsv = [a + intensity * b for a, b in zip(new_hsv, distance)]
-    new_hsv[0] = new_hsv[0] % 1
-
-    return new_hsv
 
 def plot_tags(data, plot_config):
     '''Plot snapshots of the simulation over time
@@ -457,11 +467,17 @@ def plot_tags(data, plot_config):
               the tag name label
             * **default_font_size** (:py:class:`float`): Font size for
               titles and axis labels.
+            * **membrane_width** (:py:class:`float`): Width to use for
+                drawing agent edges.
+            * **membrane_color** (:py:class:`list`): RGB color to use
+                for drawing agent edges.
+            * **tag_colors** (:py:class:`dict`): Mapping from tag ID to
+                the HSV color to use for that tag as a list.
     '''
     check_plt_backend()
 
     n_snapshots = plot_config.get('n_snapshots', 6)
-    out_dir = plot_config.get('out_dir', 'out')
+    out_dir = plot_config.get('out_dir', False)
     filename = plot_config.get('filename', 'tags')
     agent_shape = plot_config.get('agent_shape', 'segment')
     background_color = plot_config.get('background_color', 'black')
@@ -470,6 +486,9 @@ def plot_tags(data, plot_config):
     tag_label_size = plot_config.get('tag_label_size', 20)
     default_font_size = plot_config.get('default_font_size', 36)
     convert_to_concs = plot_config.get('convert_to_concs', True)
+    membrane_width = plot_config.get('membrane_width', 0.1)
+    membrane_color = plot_config.get('membrane_color', [1, 1, 1])
+    tag_colors = plot_config.get('tag_colors', dict())
 
     if tagged_molecules == []:
         raise ValueError('At least one molecule must be tagged.')
@@ -489,7 +508,6 @@ def plot_tags(data, plot_config):
 
     # get tag ids and range
     tag_ranges = {}
-    tag_colors = {}
 
     for time, time_data in agents.items():
         for agent_id, agent_data in time_data.items():
@@ -507,9 +525,10 @@ def plot_tags(data, plot_config):
                     tag_ranges[tag_id] = [level, level]
 
                     # select random initial hue
-                    hue = random.choice(HUES)
-                    tag_color = [hue] + FLOURESCENT_SV
-                    tag_colors[tag_id] = tag_color
+                    if tag_id not in tag_colors:
+                        hue = random.choice(HUES)
+                        tag_color = [hue] + FLOURESCENT_SV
+                        tag_colors[tag_id] = tag_color
 
     # make the figure
     n_rows = len(tagged_molecules)
@@ -542,9 +561,8 @@ def plot_tags(data, plot_config):
             # update agent colors based on tag_level
             min_tag, max_tag = tag_ranges[tag_id]
             agent_tag_colors = {}
+            tag_h, tag_s, _ = tag_colors[tag_id]
             for agent_id, agent_data in agents[time].items():
-                agent_color = BASELINE_TAG_COLOR
-
                 # get current tag concentration, and determine color
                 level = get_value_from_path(agent_data, tag_id)
                 if convert_to_concs:
@@ -552,17 +570,17 @@ def plot_tags(data, plot_config):
                     level = level / volume if volume else 0
                 if min_tag != max_tag:
                     concentrations.append(level)
-                    intensity = max((level - min_tag), 0)
-                    intensity = min(intensity / (max_tag - min_tag), 1)
-                    tag_color = tag_colors[tag_id]
-                    agent_color = get_fluorescent_color(
-                        BASELINE_TAG_COLOR, tag_color, intensity)
+                    intensity = (level - min_tag)/ (max_tag - min_tag)
+                    agent_color = tag_h, tag_s, intensity
                     agent_rgb = matplotlib.colors.hsv_to_rgb(agent_color)
                     used_agent_colors.append(agent_rgb)
+                else:
+                    agent_color = tag_h, tag_s, 0
 
                 agent_tag_colors[agent_id] = agent_color
 
-            plot_agents(ax, agents[time], agent_tag_colors, agent_shape)
+            plot_agents(ax, agents[time], agent_tag_colors, agent_shape,
+                    None, membrane_width, membrane_color)
 
             # colorbar in new column after final snapshot
             if col_idx == n_snapshots - 1:
@@ -576,22 +594,26 @@ def plot_tags(data, plot_config):
                     continue
                 divider = make_axes_locatable(ax)
                 cax = divider.append_axes("left", size="5%", pad=0.0)
-                norm = matplotlib.colors.Normalize()
+                norm = matplotlib.colors.Normalize(
+                    vmin=min_tag, vmax=max_tag)
                 # Sort colors and concentrations by concentration
                 sorted_idx = np.argsort(concentrations)
-                norm.autoscale(used_agent_colors)
-                cmap = matplotlib.colors.ListedColormap(
-                    np.array(used_agent_colors)[sorted_idx])
+                cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
+                    'row_{}'.format(row_idx),
+                    [
+                        np.array(used_agent_colors)[sorted_idx][0],
+                        np.array(used_agent_colors)[sorted_idx][-1],
+                    ],
+                )
                 mappable = matplotlib.cm.ScalarMappable(norm, cmap)
-                mappable.set_array(np.array(concentrations)[sorted_idx])
-                mappable.set_clim(min_tag, max_tag)
                 fig.colorbar(mappable, cax=cax, format='%.6f')
 
-    fig_path = os.path.join(out_dir, filename)
-    fig.subplots_adjust(wspace=0.7, hspace=0.1)
-    fig.savefig(fig_path, bbox_inches='tight')
-    plt.close(fig)
     plt.rcParams.update({'font.size': original_fontsize})
+    if out_dir:
+        fig_path = os.path.join(out_dir, filename)
+        fig.subplots_adjust(wspace=0.7, hspace=0.1)
+        fig.savefig(fig_path, bbox_inches='tight')
+        plt.close(fig)
 
 def initialize_spatial_figure(bounds, fontsize=18):
 

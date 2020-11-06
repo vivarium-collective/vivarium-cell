@@ -263,7 +263,6 @@ class ConvenienceKinetics(Process):
         for state in self.kinetic_rate_laws.reaction_ids:
             schema['fluxes'][state] = {
                 '_default': 0.0,
-                '_emit': False,
                 '_updater': 'set',
             }
 
@@ -271,7 +270,6 @@ class ConvenienceKinetics(Process):
         schema['global'] = {
             'mmol_to_counts': {
                 '_default': 0.0 * units.L / units.mmol,
-                '_emit': False,
             },
             'location': {
                 '_default': [0.5, 0.5],
@@ -310,7 +308,7 @@ class ConvenienceKinetics(Process):
         # kinetic rate law requires a flat dict with ('port', 'state') keys.
         flattened_states = remove_units(tuplify_port_dicts(states))
 
-        # get flux
+        # get flux, which is in units of mmol / L
         fluxes = self.kinetic_rate_laws.get_fluxes(flattened_states)
 
         # make the update
