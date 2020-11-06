@@ -146,9 +146,6 @@ class Metabolism(Process):
             initial_parameters = {}
         self.nAvogadro = AVOGADRO
 
-        time_step = self.or_default(
-            initial_parameters, 'time_step')
-
         # initialize FBA
         if 'model_path' not in initial_parameters and 'stoichiometry' not in initial_parameters:
             initial_parameters['model_path'] = self.defaults['model_path']
@@ -178,16 +175,12 @@ class Metabolism(Process):
                 else:
                     self.objective_composition[mol_id] = coeff1 * coeff2
 
-        # parameters
-        parameters = {'time_step': time_step}
-        parameters.update(initial_parameters)
+        # TODO -- move this super up to the top of the init, and replace all or_default
+        super(Metabolism, self).__init__(initial_parameters)
+        self.global_deriver_key = self.parameters['global_deriver_key']
+        self.mass_deriver_key = self.parameters['mass_deriver_key']
+        self.initial_mass = self.parameters['initial_mass']
 
-        self.global_deriver_key = self.or_default(
-            initial_parameters, 'global_deriver_key')
-        self.mass_deriver_key = self.or_default(
-            initial_parameters, 'mass_deriver_key')
-
-        super(Metabolism, self).__init__(parameters)
 
     def initial_state(self, config=None):
 
