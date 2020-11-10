@@ -74,7 +74,7 @@ class Master(Generator):
         # Division
         # get initial volume from metabolism
         division_config = config.get('division', {})
-        division_config.update({'initial_state': metabolism.initial_state})
+        division_config.update({'initial_state': metabolism.initial_state()})
         division = DivisionVolume(division_config)
 
         return {
