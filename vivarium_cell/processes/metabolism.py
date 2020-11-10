@@ -201,12 +201,20 @@ class Metabolism(Process):
         external_state = {state_id: 0.0 for state_id in self.fba.external_molecules}
         external_state.update(self.fba.minimal_external)  # optimal minimal media from fba
 
+        # solve the fba problem to get flux_bounds
+        flux_bounds = {}
+        exchange_fluxes = self.fba.read_exchange_fluxes()
+        internal_fluxes = self.fba.read_internal_fluxes()
+        flux_bounds.update({mol: -val for mol, val in exchange_fluxes.items()})
+        flux_bounds.update(internal_fluxes)
+
         # save initial state
         return {
             'external': external_state,
             'internal': internal_state,
-            'flux_bounds': {reaction_id: self.default_upper_bound
-                            for reaction_id in self.constrained_reaction_ids},
+            'flux_bounds': {
+                reaction_id: flux_bounds.get(reaction_id.replace('EX_', ''), self.default_upper_bound)
+                for reaction_id in self.constrained_reaction_ids},
         }
 
     def ports_schema(self):
