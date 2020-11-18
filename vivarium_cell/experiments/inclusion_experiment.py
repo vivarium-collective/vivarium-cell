@@ -44,7 +44,7 @@ lattice_config = make_lattice_config(
 
 def run_experiment(config={}):
     agent_id = '1'
-    time_total = 10000
+    time_total = 12000
 
     inclusion_config = {
         'agent_id': agent_id,
