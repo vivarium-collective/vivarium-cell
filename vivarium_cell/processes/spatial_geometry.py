@@ -28,7 +28,14 @@ DENSITY = 1100      # fg/um^3
 
 class SpatialGeometry(Deriver):
     """
-    Assumes spherocylinder with constant radius
+    Calculates geometric parameters of nodes and edges utilized in
+    diffusion_network.py. This process assumes E. coli is a spherocylinder
+    with constant radius. This process is currently unfinished. This process
+    assumes that there are properties of the nodes that specify which type
+    of compartment it is such that the geometry rules below apply. This is
+    not currently implemented in ecoli_spatial.py in vivarium-ecoli.
+    Much of the geometry rules have been specified, however it should be
+    checked to see if it leads to consistent results.
     """
 
     name = NAME
