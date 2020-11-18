@@ -65,7 +65,7 @@ class DiffusionNetwork(Process):
                    pairs of `nodes` to a list of nodes each edge connects,
                    and `cross_sectional_area` to the area of that edge.
                    Additionally, known diffusion constants can be included as
-                   `diffusion_constants` in units of um^2/3, and edge-specific
+                   `diffusion_constants` in units of um^2/s, and edge-specific
                    scaling of the diffusion constants can be included as,
                    `diffusion_scaling_constant`.
                  * **mw** (:py:class:`dict`): Maps from
@@ -76,7 +76,11 @@ class DiffusionNetwork(Process):
                    units of s.
                  * **radii** (:py:class:`dict`): Maps from molecule names
                    of molecules (the keys of the dict) to their known
-                   hydrodynamic radii in units of um (the values of the dict).
+                   hydrodynamic radii in units of nm (the values of the dict).
+                   This is an optional parameter.
+                 * **temp** (:py:class:`float`): Temperature of experiment
+                 in units of K. This is an optional parameter.
+
 '''
 
     name = NAME
@@ -88,6 +92,7 @@ class DiffusionNetwork(Process):
         'mesh_size': 50,    # in nm
         'time_step': 0.1,     # in s
         'radii': {},        # nm
+        'temp': 310.15,     # in K
     }
 
     def __init__(self, parameters=None):
@@ -98,6 +103,7 @@ class DiffusionNetwork(Process):
         self.molecule_ids = self.parameters['mw'].keys()
         self.mesh_size = self.parameters['mesh_size']
         self.radii = self.parameters['radii']
+        self.temp = self.parameters['temp']
         self.remainder = np.zeros((len(self.nodes), len(self.molecule_ids)))
 
         # get molecule radii by molecular weights
@@ -107,7 +113,7 @@ class DiffusionNetwork(Process):
 
         # get diffusion constants per molecule
         self.diffusion_constants = compute_diffusion_constants_from_rp(
-            self.molecule_ids, self.rp, self.mesh_size, self.edges)
+            self.molecule_ids, self.rp, self.mesh_size, self.edges, self.temp)
 
     def ports_schema(self):
         '''
@@ -142,9 +148,9 @@ class DiffusionNetwork(Process):
         return schema
 
     def next_update(self, timestep, state):
-        A = np.asarray([np.identity(len(self.nodes)) for mol in self.molecule_ids])
+        M = np.asarray([np.identity(len(self.nodes)) for mol in self.molecule_ids])
 
-        # construct A matrix based off of graph, all edges assumed bidirectional
+        # construct M matrix based off of graph, all edges assumed bidirectional
         for edge_id, edge in self.edges.items():
             node_index_1 = np.where(self.nodes == edge['nodes'][0])[0][0]
             node_index_2 = np.where(self.nodes == edge['nodes'][1])[0][0]
@@ -154,10 +160,10 @@ class DiffusionNetwork(Process):
             dx = state[edge['nodes'][0]]['length'] / 2 + state[edge['nodes'][1]]['length'] / 2
             diffusion_constants = array_from(self.diffusion_constants[edge_id])
             alpha = diffusion_constants * (cross_sectional_area / dx) * timestep
-            A[:, node_index_1, node_index_1] += alpha / vol_1
-            A[:, node_index_2, node_index_2] += alpha / vol_2
-            A[:, node_index_1, node_index_2] -= alpha / vol_1
-            A[:, node_index_2, node_index_1] -= alpha / vol_2
+            M[:, node_index_1, node_index_1] += alpha / vol_1
+            M[:, node_index_2, node_index_2] += alpha / vol_2
+            M[:, node_index_1, node_index_2] -= alpha / vol_1
+            M[:, node_index_2, node_index_1] -= alpha / vol_2
 
         # Calculates final concentration after one timestep
         c_initial = np.asarray(
@@ -165,7 +171,7 @@ class DiffusionNetwork(Process):
                          array_from(self.mw)) / state[node]['volume']
              for node in state])
         c_final = np.asarray([np.matmul(np.linalg.inv(a), c_initial[:, i])
-                              for i, a in enumerate(A)]).T
+                              for i, a in enumerate(M)]).T
 
         # Calculates final counts
         volumes = np.asarray(
@@ -373,7 +379,7 @@ def calculate_rp_from_mw(molecule_ids, mw):
 
 # This function is modified from spatial_tool.py from WCM
 def compute_diffusion_constants_from_rp(molecule_ids, rp, mesh_size, edges,
-                                       temp = None):
+                                       temp):
     '''
         Warning: The default values of the 'parameters' are E coli specific.
 
