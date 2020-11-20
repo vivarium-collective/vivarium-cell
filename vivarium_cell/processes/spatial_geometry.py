@@ -40,7 +40,10 @@ class SpatialGeometry(Deriver):
 
     name = NAME
     defaults = {
-        'nodes': [],
+        'nodes': [
+            'nucleoid',
+            'periplasm',
+        ],
         'edges': {},
         'density': DENSITY,
         'mw': {},
@@ -75,7 +78,7 @@ class SpatialGeometry(Deriver):
                         '_default': 0,
                     }
                 }
-            } for node_id in self.parameters['nodes'],
+            } for node_id in self.parameters['nodes']
         }
         edge_schema = {
             edge_id: {
@@ -84,7 +87,10 @@ class SpatialGeometry(Deriver):
             } for edge_id in self.parameters['edges'].keys()
         }
 
-        return {**node_schema, **edge_schema}
+        return {
+            'nodes': node_schema,
+            'edges': edge_schema
+        }
 
     def next_update(self, timestep, states):
         volume = np.zeros(len(self.nodes))
