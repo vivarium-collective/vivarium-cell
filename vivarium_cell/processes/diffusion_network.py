@@ -204,7 +204,7 @@ class DiffusionNetwork(Process):
 
 
 # TODO: change this to multiple tests and add asserts
-def test_diffusion_network_process(out_dir='out'):
+def test_diffusion_network_process(out_dir=None):
     # initialize the process by passing initial_parameters
     n = int(1E6)
     molecule_ids = [str(np.round(i, 1)) for i in np.arange(0.1, 19.6, 0.1)]
@@ -266,13 +266,14 @@ def test_diffusion_network_process(out_dir='out'):
     rp = diffusion_network_process.rp
     diffusion_constants = diffusion_network_process.diffusion_constants
 
-    # plot the simulation output
-    plot_output(output, sim_settings['initial_state'])
-    # plot_diff_range(diffusion_constants, rp)
+    if out_dir:
+        # plot the simulation output
+        plot_output(output, sim_settings['initial_state'], out_dir)
+        # plot_diff_range(diffusion_constants, rp, out_dir)
 
 
 # Plots the diffusion constants by molecule sizes for edges with and without mesh
-def plot_diff_range(diffusion_constants, rp):
+def plot_diff_range(diffusion_constants, rp, out_dir='out'):
     plt.figure()
     plt.plot(np.multiply(rp, 2), array_from(diffusion_constants['1']), color='#d8b365')
     plt.plot(np.multiply(rp, 2), array_from(diffusion_constants['3']), color='#5ab4ac')
@@ -287,7 +288,7 @@ def plot_diff_range(diffusion_constants, rp):
 
 
 # Plots the normalized concentrations for the largest and smallest molecules
-def plot_output(output, nodes):
+def plot_output(output, nodes, out_dir='out'):
     plt.figure()
     colors = ['#d8b365', '#5ab4ac', '#018571']
     large_total = array_from(
