@@ -21,16 +21,8 @@ class GlucosePhosphorylation(Process):
         'K_GLC': 4e-2,
     }
 
-    def __init__(self, initial_parameters=None):
-        ports = {
-            'nucleoside_phosphates': ['ATP', 'ADP'],
-            'cytoplasm': ['GLC', 'G6P', 'HK'],
-            'global': ['mass']
-        }
-        parameters = GlucosePhosphorylation.defaults
-        parameters.update(initial_parameters)
-        super(GlucosePhosphorylation, self).__init__(
-            ports, parameters)
+    def __init__(self, parameters=None):
+        super(GlucosePhosphorylation, self).__init__(parameters)
 
     def next_update(self, timestep, states):
         # Get concentrations from state
