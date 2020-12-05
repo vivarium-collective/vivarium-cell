@@ -1,7 +1,6 @@
 '''
-Execute by running: ``python template/process/template_process.py``
+Execute by running: ``python vivarium_cell/processes/michael.py``
 
-TODO: Replace the template code to implement your own process.
 '''
 
 import os
@@ -12,15 +11,15 @@ from vivarium.core.composition import (
     PROCESS_OUT_DIR,
 )
 from vivarium.plots.simulation_output import plot_simulation_output
-
+from enum import IntEnum
 
 # a global NAME is used for the output directory and for the process name
-NAME = 'template'
+NAME = 'HairGrowth'
 
 
-class Template(Process):
+class HairGrowth(Process):
     '''
-    This mock process provides a basic template that can be used for a new process
+    This process simulates the growth of one hair on a human head
     '''
 
     # give the process a name, so that it can register in the process_repository
@@ -28,13 +27,18 @@ class Template(Process):
 
     # declare default parameters as class variables
     defaults = {
-        'uptake_rate': 0.1,
+        'r': 1 / 30.437,  # anagen growth rate (cm/day)
+        'r_c': (5 / 6) * .0416 / 14,  # catagen growth rate (cm/day)
+        'q_A_C': 1 / (4 * 365),  # rate constant (A to C)
+        'q_C_T1': 1 / (2 * 7),  # rate constant (C to T1)
+        'q_T1_T2': 1 / (4 * 30.437),  # rate constant (T1 to T2)
+        'q_T2_A': 1 / (2 * 7),  # rate constant (T2 to A)
     }
 
     def __init__(self, parameters=None):
         # parameters passed into the constructor merge with the defaults
         # and can be access through the self.parameters class variable
-        super(Template, self).__init__(parameters)
+        super(HairGrowth, self).__init__(parameters)
 
     def ports_schema(self):
         '''
@@ -51,39 +55,35 @@ class Template(Process):
         '''
 
         return {
-            'internal': {
-                'A': {
-                    '_default': 1.0,
+            'global': {
+                'length': {
+                    '_default': 0,
                     '_updater': 'accumulate',
                     '_emit': True,
                 },
-            },
-            'external': {
-                'A': {
-                    '_default': 1.0,
-                    '_updater': 'accumulate',
+                'phase': {
+                    '_default': 'anagen',
+                    '_updater': 'set',
                     '_emit': True,
                 },
             },
         }
-        
 
     def next_update(self, timestep, states):
-
         # get the states
-        internal_A = states['internal']['A']
-        external_A = states['external']['A']
+        length = states['global']['length']
+        phase = states['global']['phase']
 
         # calculate timestep-dependent updates
-        internal_update = self.parameters['uptake_rate'] * external_A * timestep
-        external_update = -1 * internal_update
+        length_update = self.parameters["r"] * timestep
+        phase_update = phase
 
         # return an update that mirrors the ports structure
         return {
-            'internal': {
-                'A': internal_update},
-            'external': {
-                'A': external_update}
+            'global': {
+                'length' : length_update,
+                'phase' : phase_update
+            }
         }
 
 
@@ -97,17 +97,15 @@ def run_template_process():
 
     # initialize the process by passing in parameters
     parameters = {}
-    template_process = Template(parameters)
+    template_process = HairGrowth(parameters)
 
     # declare the initial state, mirroring the ports structure
     initial_state = {
-        'internal': {
-            'A': 0.0
+        'global': {
+            'length': 0.0,
+            'phase': 'anagen'
         },
-        'external': {
-            'A': 1.0
-        },
-    }
+     }
 
     # run the simulation
     sim_settings = {
