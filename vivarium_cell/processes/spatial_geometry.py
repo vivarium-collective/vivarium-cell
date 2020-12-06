@@ -94,17 +94,17 @@ class SpatialGeometry(Deriver):
 
     def next_update(self, timestep, states):
         volume = np.zeros(len(self.nodes))
-        length = [states['nodes'][node_id]['length'] for node_id in self.nodes]
+        nodes = states['nodes']
+        length = [nodes[node_id]['length'] for node_id in self.nodes]
         cross_sectional_area = np.zeros(len(self.edges))
-        inner_radius = states['nodes']['nucleoid']['radius']
-        outer_radius = states['nodes']['periplasm']['radius'] + inner_radius
+        inner_radius = nodes['nucleoid']['radius']
+        outer_radius = nodes['periplasm']['radius'] + inner_radius
 
         # TODO -- get volume of each node from molecules and density
         for i, node_id in enumerate(self.nodes):
-            nodes = states[node_id]['nodes']
             # if nucleoid or nucleoid region of membrane
             nucleoid = True
-            volume[i] = sum(array_from(states[node_id]['molecules']))*self.density
+            volume[i] = sum(array_from(nodes[node_id]['molecules']))*self.density
             if nucleoid:
                 length[i] = volume[i]/(np.pi * inner_radius**2)
         for i, edge_id in enumerate(self.edges):
@@ -151,12 +151,13 @@ class SpatialGeometry(Deriver):
                 'length': volume[np.where(self.nodes == node_id)][0],
             } for node_id in self.nodes
         }
-        edge_update = {
-            edge_id: {
-                'cross_sectional_area': cross_sectional_area[
-                    np.where(self.edges == edge_id)][0],
-            } for edge_id in self.nodes
-        }
+        edge_update = {}
+        # edge_update = {
+        #     edge_id: {
+        #         'cross_sectional_area': cross_sectional_area[
+        #             np.where(self.edges == edge_id)][0],
+        #     } for edge_id in self.nodes
+        # }
         return {**node_update, **edge_update}
 
 
@@ -207,9 +208,9 @@ def main():
 
     output = test_spatial_geometry_process()
 
-    # plot the simulation output
-    plot_settings = {}
-    plot_simulation_output(output, plot_settings, out_dir)
+    # # plot the simulation output
+    # plot_settings = {}
+    # plot_simulation_output(output, plot_settings, out_dir)
 
 
 # Helper functions
