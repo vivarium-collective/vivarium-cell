@@ -59,7 +59,7 @@ class Kpump(Process):
     def next_update(self, timestep, states):
 
         # get the states
-        open = states['golbal']['open']
+        open = states['global']['open']
         closed = states['global']['closed']
         proportion_open = open/self.parameters['total_gates']
 
@@ -70,8 +70,8 @@ class Kpump(Process):
         # return an update that mirrors the ports structure
         return {
             'global': {
-                'open': length_update,
-                'closed': phase_update
+                'open': open_update,
+                'closed': closed_update
             }
         }
 
