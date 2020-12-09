@@ -562,12 +562,8 @@ class Translation(Process):
             {'key': bound, 'state': ribosomes[bound]}
             for bound in bound_ribosomes]
 
-        delete_ribosomes = [
-            completed,
-            for completed in completed_ribosomes]
-
         ribosome_updates['_add'] = add_ribosomes
-        ribosome_updates['_delete'] = delete_ribosomes
+        ribosome_updates['_delete'] = completed_ribosomes
 
         update = {
             'ribosomes': ribosome_updates,

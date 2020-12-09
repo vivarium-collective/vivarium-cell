@@ -532,12 +532,8 @@ class Transcription(Process):
             {'key': bound, 'state': rnaps[bound]}
             for bound in bound_rnaps]
 
-        delete_rnaps = [
-            completed,
-            for completed in completed_rnaps]
-
         rnap_updates['_add'] = add_rnaps
-        rnap_updates['_delete'] = delete_rnaps
+        rnap_updates['_delete'] = completed_rnaps
         chromosome_dict['rnaps'] = rnap_updates
 
         update = {
