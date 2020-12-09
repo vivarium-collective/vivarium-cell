@@ -529,11 +529,11 @@ class Transcription(Process):
             for rnap_id in continuing_rnaps}
 
         add_rnaps = [
-            {'path': (bound,), 'state': rnaps[bound]}
+            {'key': bound, 'state': rnaps[bound]}
             for bound in bound_rnaps]
 
         delete_rnaps = [
-            (completed,)
+            completed,
             for completed in completed_rnaps]
 
         rnap_updates['_add'] = add_rnaps
