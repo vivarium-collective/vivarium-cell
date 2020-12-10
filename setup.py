@@ -47,4 +47,5 @@ setup(
         'parsimonious',
         'stochastic-arrow',
         'pymunk',
+        'iteround',
         'alphashape'])
