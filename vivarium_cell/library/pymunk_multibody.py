@@ -224,7 +224,7 @@ class PymunkMultibody(object):
         for line in static_lines:
             line.elasticity = 0.0  # bounce
             line.friction = 0.8
-        self.space.add(static_lines)
+            self.space.add(line)
 
     def get_shape(self, boundary):
         '''
