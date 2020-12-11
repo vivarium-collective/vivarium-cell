@@ -1,21 +1,13 @@
-from __future__ import absolute_import, division, print_function
-
-import os
-
-# Python imports
 import random
 import math
-import numpy as nppython
+import numpy as np
 
-# pymunk imports
-import pymunkoptions
-pymunkoptions.options["debug"] = False
 import pymunk
 
 
 PI = math.pi
-
 DEBUG_SIZE = 600  # size of the pygame debug screen
+
 
 def get_force_with_angle(force, angle):
     x = force * math.cos(angle)
