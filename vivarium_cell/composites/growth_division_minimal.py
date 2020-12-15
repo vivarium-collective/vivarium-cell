@@ -39,7 +39,7 @@ class GrowthDivisionMinimal(Generator):
             config.get('division', {}),
             daughter_path=daughter_path,
             agent_id=agent_id,
-            compartment=self)
+            generator=self)
 
         growth_config = config.get('growth', {})
         if 'growth_rate' in config:

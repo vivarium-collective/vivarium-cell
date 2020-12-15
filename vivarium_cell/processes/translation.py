@@ -273,7 +273,7 @@ class Translation(Process):
         ... )
         >>> update = translation.next_update(1, states)
         >>> print(update['ribosomes'])
-        {'_add': [{'path': (1,), 'state': <class 'vivarium_cell.processes.translation.Ribosome'>: {'id': 1, 'state': 'occluding', 'position': 9, 'template': ('oAZ', 'eZ'), 'template_index': 0, 'terminator': 0}}, {'path': (2,), 'state': <class 'vivarium_cell.processes.translation.Ribosome'>: {'id': 2, 'state': 'occluding', 'position': 9, 'template': ('oAZ', 'eZ'), 'template_index': 0, 'terminator': 0}}], '_delete': []}
+        {'_add': [{'key': 1, 'state': <class 'vivarium_cell.processes.translation.Ribosome'>: {'id': 1, 'state': 'occluding', 'position': 9, 'template': ('oAZ', 'eZ'), 'template_index': 0, 'terminator': 0}}, {'key': 2, 'state': <class 'vivarium_cell.processes.translation.Ribosome'>: {'id': 2, 'state': 'occluding', 'position': 9, 'template': ('oAZ', 'eZ'), 'template_index': 0, 'terminator': 0}}], '_delete': set()}
         '''
 
         if not initial_parameters:

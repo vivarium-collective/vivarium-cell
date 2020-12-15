@@ -56,7 +56,7 @@ class InclusionBodyGrowth(Generator):
             config.get('division', {}),
             daughter_path=daughter_path,
             agent_id=agent_id,
-            compartment=self)
+            generator=self)
 
         return {
             'inclusion_process': InclusionBody(config['inclusion_process']),
