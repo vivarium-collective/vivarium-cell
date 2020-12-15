@@ -10,7 +10,7 @@ with open("README.md", 'r') as readme:
 
 setup(
     name='vivarium-cell',
-    version='0.0.25',
+    version='0.1.0',
     packages=[
         'vivarium_cell',
         'vivarium_cell.analysis',
@@ -41,10 +41,10 @@ setup(
     long_description_content_type='text/markdown',
     include_package_data=True,
     install_requires=[
-        'vivarium-core>=0.0.19',
+        'vivarium-core>=0.1.0',
         'cobra',
         'Arpeggio',
         'parsimonious',
         'stochastic-arrow',
-        'pymunk',
+        'pymunk<6.0.0',
         'alphashape'])
