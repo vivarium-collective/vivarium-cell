@@ -46,5 +46,5 @@ setup(
         'Arpeggio',
         'parsimonious',
         'stochastic-arrow',
-        'pymunk<6.0.0',
+        'pymunk',
         'alphashape'])
