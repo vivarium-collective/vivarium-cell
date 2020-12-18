@@ -187,7 +187,7 @@ class Transcription(Process):
         ... }
         >>> update = transcription_process.next_update(1.0, state)
         >>> print(update['chromosome'])
-        {'rnaps': {'_add': [{'path': (2,), 'state': <class 'vivarium_cell.states.chromosome.Rnap'>: {'id': 2, 'template': 'pA', 'template_index': 0, 'terminator': 1, 'domain': 0, 'state': 'polymerizing', 'position': 7}}, {'path': (3,), 'state': <class 'vivarium_cell.states.chromosome.Rnap'>: {'id': 3, 'template': 'pB', 'template_index': 1, 'terminator': 0, 'domain': 0, 'state': 'occluding', 'position': 3}}, {'path': (4,), 'state': <class 'vivarium_cell.states.chromosome.Rnap'>: {'id': 4, 'template': 'pA', 'template_index': 0, 'terminator': 0, 'domain': 0, 'state': 'occluding', 'position': 0}}], '_delete': []}, 'rnap_id': 4, 'domains': {0: <class 'vivarium_cell.states.chromosome.Domain'>: {'id': 0, 'lead': 0, 'lag': 0, 'children': []}}, 'root_domain': 0}
+        {'rnaps': {'_add': [{'key': 2, 'state': <class 'vivarium_cell.states.chromosome.Rnap'>: {'id': 2, 'template': 'pA', 'template_index': 0, 'terminator': 1, 'domain': 0, 'state': 'polymerizing', 'position': 7}}, {'key': 3, 'state': <class 'vivarium_cell.states.chromosome.Rnap'>: {'id': 3, 'template': 'pB', 'template_index': 1, 'terminator': 0, 'domain': 0, 'state': 'occluding', 'position': 3}}, {'key': 4, 'state': <class 'vivarium_cell.states.chromosome.Rnap'>: {'id': 4, 'template': 'pA', 'template_index': 0, 'terminator': 0, 'domain': 0, 'state': 'occluding', 'position': 0}}], '_delete': set()}, 'rnap_id': 4, 'domains': {0: <class 'vivarium_cell.states.chromosome.Domain'>: {'id': 0, 'lead': 0, 'lag': 0, 'children': []}}, 'root_domain': 0}
         '''
 
         if not initial_parameters:
@@ -529,15 +529,11 @@ class Transcription(Process):
             for rnap_id in continuing_rnaps}
 
         add_rnaps = [
-            {'path': (bound,), 'state': rnaps[bound]}
+            {'key': bound, 'state': rnaps[bound]}
             for bound in bound_rnaps]
 
-        delete_rnaps = [
-            (completed,)
-            for completed in completed_rnaps]
-
         rnap_updates['_add'] = add_rnaps
-        rnap_updates['_delete'] = delete_rnaps
+        rnap_updates['_delete'] = completed_rnaps
         chromosome_dict['rnaps'] = rnap_updates
 
         update = {

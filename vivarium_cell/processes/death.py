@@ -209,10 +209,7 @@ class DeathFreezeState(Process):
                         'dead': 1,
                     },
                     'processes': {
-                        '_delete': [
-                            (target,)
-                            for target in self.targets
-                        ],
+                        '_delete': self.targets,
                     },
                 }
                 return update

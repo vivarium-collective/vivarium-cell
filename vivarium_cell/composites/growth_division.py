@@ -70,7 +70,7 @@ class GrowthDivision(Generator):
             config.get('division', {}),
             daughter_path=daughter_path,
             agent_id=agent_id,
-            compartment=self)
+            generator=self)
         division = MetaDivision(division_config)
 
         return {
