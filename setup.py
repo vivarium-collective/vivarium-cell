@@ -10,7 +10,7 @@ with open("README.md", 'r') as readme:
 
 setup(
     name='vivarium-cell',
-    version='0.0.25',
+    version='0.0.26',
     packages=[
         'vivarium_cell',
         'vivarium_cell.analysis',
