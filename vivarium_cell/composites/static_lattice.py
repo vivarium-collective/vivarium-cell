@@ -1,8 +1,6 @@
-from __future__ import absolute_import, division, print_function
-
 import os
 
-from vivarium.core.process import Generator
+from vivarium.core.process import Composite
 from vivarium.core.composition import (
     compartment_in_experiment,
     COMPARTMENT_OUT_DIR,
@@ -19,7 +17,7 @@ from vivarium_cell.processes.static_field import StaticField
 NAME = 'static_lattice'
 
 
-class StaticLattice(Generator):
+class StaticLattice(Composite):
 
     defaults = {
         'multibody': {

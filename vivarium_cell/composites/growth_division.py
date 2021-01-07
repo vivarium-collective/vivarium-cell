@@ -1,11 +1,9 @@
-from __future__ import absolute_import, division, print_function
-
 import os
 import uuid
 import copy
 
 from vivarium.library.units import units
-from vivarium.core.process import Generator
+from vivarium.core.process import Composite
 from vivarium.core.composition import (
     COMPARTMENT_OUT_DIR,
     simulate_compartment_in_experiment,
@@ -29,7 +27,7 @@ from vivarium_cell.processes.convenience_kinetics import (
 NAME = 'growth_division'
 
 
-class GrowthDivision(Generator):
+class GrowthDivision(Composite):
 
     defaults = {
         'boundary_path': ('boundary',),

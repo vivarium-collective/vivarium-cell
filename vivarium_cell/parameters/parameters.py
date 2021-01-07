@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import os
 import copy
 import itertools
@@ -10,7 +8,7 @@ import matplotlib.pyplot as plt
 
 from vivarium.library.units import units
 from vivarium.core.composition import simulate_compartment_in_experiment
-from vivarium.core.process import Generator
+from vivarium.core.process import Composite
 
 # processes for testing
 from vivarium_cell.processes.convenience_kinetics import ConvenienceKinetics, get_glc_lct_config
@@ -249,7 +247,7 @@ def plot_scan_results(results, out_dir='out', filename='parameter_scan'):
 
 
 # testing
-class TestConvienceKinetics(Generator):
+class TestConvienceKinetics(Composite):
     defaults = {
         'boundary_path': ('boundary',),
         'config':  {

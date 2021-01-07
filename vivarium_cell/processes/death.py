@@ -43,7 +43,7 @@ from vivarium.core.composition import (
     simulate_compartment_in_experiment,
     PROCESS_OUT_DIR,
 )
-from vivarium.core.process import Process, Generator
+from vivarium.core.process import Process, Composite
 from vivarium.plots.simulation_output import plot_simulation_output
 
 TOY_ANTIBIOTIC_THRESHOLD = 5.0
@@ -240,7 +240,7 @@ class ToyAntibioticInjector(Process):
         return {'internal': {self.antibiotic_name: delta}}
 
 
-class ToyDeath(Generator):
+class ToyDeath(Composite):
 
     def generate_processes(self, config):
         death_parameters = {

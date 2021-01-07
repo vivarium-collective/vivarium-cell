@@ -1,9 +1,7 @@
-from __future__ import absolute_import, division, print_function
-
 import os
 
 from vivarium.library.units import units
-from vivarium.core.process import Generator
+from vivarium.core.process import Composite
 from vivarium.core.composition import (
     simulate_compartment_in_experiment,
     COMPARTMENT_OUT_DIR,
@@ -20,7 +18,7 @@ NAME = 'growth_division_minimal'
 
 
 
-class GrowthDivisionMinimal(Generator):
+class GrowthDivisionMinimal(Composite):
 
     defaults = {
         # 'growth_rate': 0.006,  # very fast growth

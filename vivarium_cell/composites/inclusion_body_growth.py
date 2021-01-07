@@ -8,7 +8,7 @@ import os
 
 from vivarium.library.units import units
 from vivarium.library.dict_utils import deep_merge
-from vivarium.core.process import Generator
+from vivarium.core.process import Composite
 from vivarium.core.composition import (
     simulate_compartment_in_experiment,
     COMPOSITE_OUT_DIR,
@@ -28,7 +28,7 @@ from vivarium_cell.processes.derive_globals import DeriveGlobals
 NAME = 'inclusion_body_growth'
 
 
-class InclusionBodyGrowth(Generator):
+class InclusionBodyGrowth(Composite):
 
     defaults = {
         'inclusion_process': {},
@@ -95,8 +95,6 @@ class InclusionBodyGrowth(Generator):
 
 
     def initial_state(self, config=None):
-        # TODO -- find a way to build this into the generator...
-
         if config is None:
             config = {}
         initial_state_config = self.config['initial_state_config']

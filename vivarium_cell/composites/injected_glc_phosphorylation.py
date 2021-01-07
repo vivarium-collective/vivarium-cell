@@ -7,14 +7,14 @@ This is a toy example referenced in the documentation.
 """
 
 from vivarium.core.experiment import Experiment
-from vivarium.core.process import Generator
+from vivarium.core.process import Composite
 from vivarium.library.pretty import format_dict
 
 from vivarium_cell.processes.glucose_phosphorylation import GlucosePhosphorylation
 from vivarium_cell.processes.injector import Injector
 
 
-class InjectedGlcPhosphorylation(Generator):
+class InjectedGlcPhosphorylation(Composite):
 
     defaults = {
         'glucose_phosphorylation': {
