@@ -1,8 +1,6 @@
-from __future__ import absolute_import, division, print_function
-
 import os
 
-from vivarium.core.process import Generator
+from vivarium.core.process import Composite
 from vivarium.core.composition import (
     COMPARTMENT_OUT_DIR,
     simulate_compartment_in_experiment,
@@ -26,7 +24,7 @@ from vivarium_cell.states.chromosome import toy_chromosome_config
 
 NAME = 'gene_expression'
 
-class GeneExpression(Generator):
+class GeneExpression(Composite):
 
     defaults = {
         'global_path': ('global',),

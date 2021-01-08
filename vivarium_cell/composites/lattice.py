@@ -1,9 +1,8 @@
-from __future__ import absolute_import, division, print_function
 
 import copy
 import os
 
-from vivarium.core.process import Generator
+from vivarium.core.process import Composite
 from vivarium.core.composition import (
     compartment_in_experiment,
     COMPARTMENT_OUT_DIR,
@@ -86,7 +85,7 @@ def make_lattice_config(
 
 
 
-class Lattice(Generator):
+class Lattice(Composite):
     """
     Lattice:  A two-dimensional lattice environmental model with multibody physics and diffusing molecular fields.
     """

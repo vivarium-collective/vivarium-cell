@@ -1,8 +1,6 @@
-from __future__ import absolute_import, division, print_function
-
 import os
 
-from vivarium.core.process import Generator
+from vivarium.core.process import Composite
 from vivarium.core.composition import (
     simulate_compartment_in_experiment,
     COMPARTMENT_OUT_DIR
@@ -35,7 +33,7 @@ def default_metabolism_config():
 
 
 
-class Master(Generator):
+class Master(Composite):
 
     defaults = {
         'global_path': ('global',),
