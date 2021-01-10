@@ -178,7 +178,7 @@ class PymunkMultibody(object):
 
     def add_barriers(self, bounds, barriers):
         """ Create static barriers """
-        thickness = 5.0
+        thickness = 50.0
         offset = thickness
         x_bound = bounds[0]
         y_bound = bounds[1]
