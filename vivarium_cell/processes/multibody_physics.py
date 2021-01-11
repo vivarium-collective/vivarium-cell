@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
 # vivarium imports
-from vivarium.library.units import units, remove_units
+from vivarium.library.units import units, remove_units, Quantity
 from vivarium.core.emitter import timeseries_from_data
 from vivarium.core.process import Process
 from vivarium.core.composition import (
@@ -33,9 +33,6 @@ from vivarium.core.composition import (
 from vivarium_cell.processes.derive_globals import volume_from_length
 from vivarium_cell.library.pymunk_multibody import PymunkMultibody
 from vivarium_cell.plots.multibody_physics import (
-    check_plt_backend,
-    plot_agent,
-    plot_agents,
     plot_snapshots,
     plot_temporal_trajectory,
 )
@@ -44,6 +41,9 @@ from vivarium_cell.plots.multibody_physics import (
 NAME = 'multibody'
 
 DEFAULT_BOUNDS = [10, 10]
+DEFAULT_LENGTH_UNIT = units.um
+DEFAULT_MASS_UNIT = units.fg
+DEFAULT_VELOCITY_UNIT = units.um / units.s
 
 # constants
 PI = math.pi
@@ -124,48 +124,45 @@ class Multibody(Process):
         'jitter_force': 1e-3,  # pN
         'agent_shape': 'segment',
         'bounds': DEFAULT_BOUNDS,
+        'length_unit': DEFAULT_LENGTH_UNIT,
+        'mass_unit': DEFAULT_MASS_UNIT,
+        'velocity_unit': DEFAULT_VELOCITY_UNIT,
         'mother_machine': False,
         'animate': False,
         'time_step': 2,
     }
 
-    def __init__(self, initial_parameters=None):
-        if initial_parameters is None:
-            initial_parameters = {}
+    def __init__(self, parameters=None):
+        super(Multibody, self).__init__(parameters)
 
         # multibody parameters
-        jitter_force = self.or_default(
-            initial_parameters, 'jitter_force')
-        self.agent_shape = self.or_default(
-            initial_parameters, 'agent_shape')
-        self.bounds = self.or_default(
-            initial_parameters, 'bounds')
-        self.mother_machine = self.or_default(
-            initial_parameters, 'mother_machine')
+        jitter_force = self.parameters['jitter_force']
+        self.agent_shape = self.parameters['agent_shape']
+        self.bounds = self.parameters['bounds']
+        self.mother_machine = self.parameters['mother_machine']
+
+        # units
+        self.length_unit = self.parameters['length_unit']
+        self.mass_unit = self.parameters['mass_unit']
+        self.velocity_unit = self.parameters['velocity_unit']
 
         # make the multibody object
-        self.time_step = self.or_default(
-            initial_parameters, 'time_step')
         multibody_config = {
             'agent_shape': self.agent_shape,
             'jitter_force': jitter_force,
             'bounds': self.bounds,
             'barriers': self.mother_machine,
-            'physics_dt': self.time_step / 10,
+            'physics_dt': self.parameters['time_step'] / 10,
         }
         self.physics = PymunkMultibody(multibody_config)
 
         # interactive plot for visualization
-        self.animate = initial_parameters.get('animate', self.defaults['animate'])
+        self.animate = self.parameters['animate']
         if self.animate:
             plt.ion()
             self.ax = plt.gca()
             self.ax.set_aspect('equal')
 
-        parameters = {'time_step': self.defaults['time_step']}
-        parameters.update(initial_parameters)
-
-        super(Multibody, self).__init__(parameters)
 
     def ports_schema(self):
         glob_schema = {
@@ -218,7 +215,8 @@ class Multibody(Process):
             self.animate_frame(agents)
 
         # update multibody with new agents
-        self.physics.update_bodies(remove_units(agents))
+        agents = self.bodies_remove_units(agents)
+        self.physics.update_bodies(agents)
 
         # run simulation
         self.physics.run(timestep)
@@ -248,6 +246,22 @@ class Multibody(Process):
                     for agent_id in delete_agents]
 
         return update
+
+    def bodies_remove_units(self, bodies):
+        for bodies_id, specs in bodies.items():
+            bodies[bodies_id]['boundary'] = self.boundary_remove_units(specs['boundary'])
+        return bodies
+
+    def boundary_remove_units(self, boundary):
+        if isinstance(boundary['mass'], Quantity):
+            boundary['mass'] = boundary['mass'].to(self.mass_unit).magnitude
+        if isinstance(boundary['location'], Quantity):
+            boundary['location'] = [loc.to(self.length_unit).magnitude for loc in boundary['location']]
+        # if isinstance(boundary['width'], Quantity):
+        #     boundary['width'] = boundary['width'].to(self.length_unit).magnitude
+        # if isinstance(boundary['length'], Quantity):
+        #     boundary['length'] = boundary['length'].to(self.length_unit).magnitude
+        return boundary
 
     ## matplotlib interactive plot
     def animate_frame(self, agents):
