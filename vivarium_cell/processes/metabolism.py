@@ -374,16 +374,7 @@ class Metabolism(Process):
 
         # convert exchange fluxes to counts
         field_updates = {
-            reaction: {
-                '_value': int((flux * mmol_to_counts).magnitude),
-                '_updater': {
-                    'updater': 'update_field_with_exchange',
-                    'port_mapping': {
-                        'global': 'global',
-                        'dimensions': 'dimensions',
-                    },
-                },
-            }
+            reaction: int((flux * mmol_to_counts).magnitude)
             for reaction, flux in exchange_fluxes.items()
         }
 

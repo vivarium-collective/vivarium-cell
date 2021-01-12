@@ -331,17 +331,7 @@ class ConvenienceKinetics(Process):
                             delta = int((state_flux * mmol_to_counts).magnitude)
                             existing_delta = update['fields'].get(
                                 state_id, {}).get('_value', 0)
-                            update['fields'][state_id] = {
-                                '_value': existing_delta + delta,
-                                '_updater': {
-                                    'updater': (
-                                        'update_field_with_exchange'),
-                                    'port_mapping': {
-                                        'global': 'global',
-                                        'dimensions': 'dimensions',
-                                    },
-                                },
-                            }
+                            update['fields'][state_id] = existing_delta + delta
                         else:
                             update[port_id][state_id] = (
                                 update[port_id].get(state_id, 0)

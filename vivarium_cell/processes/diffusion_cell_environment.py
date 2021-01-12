@@ -116,16 +116,7 @@ class CellEnvironmentDiffusion(Process):
             cell_volume = states['global']['volume']
         update = {
             'fields': {
-                molecule: {
-                    '_value': mol_flux.to(units.count).magnitude,
-                    '_updater': {
-                        'updater': 'update_field_with_exchange',
-                        'port_mapping': {
-                            'global': 'global',
-                            'dimensions': 'dimensions',
-                        },
-                    },
-                }
+                molecule: mol_flux.to(units.count).magnitude
                 for molecule, mol_flux in flux_counts.items()
             },
             'internal': {
