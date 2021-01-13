@@ -13,8 +13,10 @@ from vivarium_cell.library.lattice_utils import (
 
 # import processes
 from vivarium_cell.processes.derive_globals import DeriveGlobals
+from vivarium_cell.processes.local_field import LocalField
 
 # register processes
 process_registry.register(DeriveGlobals.name, DeriveGlobals)
+process_registry.register(LocalField.name, LocalField)
 
 # register updaters

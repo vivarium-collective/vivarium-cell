@@ -24,17 +24,14 @@ Bibliography
 
 '''
 
-from __future__ import absolute_import, division, print_function
-
 import os
 
 import numpy as np
-from scipy import constants
 
-from vivarium.core.experiment import schema_for
 from vivarium.core.process import Process
 from vivarium.core.composition import (
-    simulate_process_in_experiment,
+    process_in_experiment,
+    simulate_experiment,
     flatten_timeseries,
     save_timeseries,
     load_timeseries,
@@ -153,7 +150,7 @@ class ConvenienceKinetics(Process):
 
      * A ``fluxes`` port is added with variable names equal to
        the IDs of the configured reactions.
-     * A ``fields`` port is added with the same variables as the
+     * A ``exchanges`` port is added with the same variables as the
        ``external`` port.
      * A ``global`` port is added with a variable named
        ``mmol_to_counts``, which is set by a :term:`deriver`, and
@@ -223,10 +220,11 @@ class ConvenienceKinetics(Process):
         ],
         'added_port_ids': [
             'fluxes',
-            'fields',
+            'exchanges',
             'global'
         ],
-        'global_deriver_key': 'global_deriver'}
+        'global_deriver_key': 'global_deriver',
+        'local_field_key': 'local_field'}
 
     def __init__(self, parameters=None):
         super(ConvenienceKinetics, self).__init__(parameters)
@@ -249,10 +247,10 @@ class ConvenienceKinetics(Process):
                     '_default': self.initial_state[port][state_id],
                     '_emit': True}
 
-        # fields
-        # Note: fields depends on a port called external
+        # exchanges
+        # Note: exchanges depends on a port called external
         if 'external' in schema:
-            schema['fields'] = {
+            schema['exchanges'] = {
                 state_id: {
                     '_default': np.ones((1, 1)),
                 }
@@ -276,29 +274,38 @@ class ConvenienceKinetics(Process):
             },
         }
 
-        # dimiensions
-        schema['dimensions'] = {
-            'bounds': {
-                '_default': [1, 1],
-            },
-            'n_bins': {
-                '_default': [1, 1],
-            },
-            'depth': {
-                '_default': 1,
-            },
-        }
+        # # dimensions
+        # schema['dimensions'] = {
+        #     'bounds': {
+        #         '_default': [1, 1],
+        #     },
+        #     'n_bins': {
+        #         '_default': [1, 1],
+        #     },
+        #     'depth': {
+        #         '_default': 1,
+        #     },
+        # }
 
         return schema
 
     def derivers(self):
         return {
+            self.parameters['local_field_key']: {
+                'deriver': 'local_field',
+                'port_mapping': {
+                    'exchanges': 'exchanges',
+                },
+                'config': {}
+            },
             self.parameters['global_deriver_key']: {
                 'deriver': 'globals_deriver',
                 'port_mapping': {
                     'global': 'global'},
                 'config': {
-                    'width': 1.0}}}
+                    'width': 1.0}
+            }
+        }
 
     def next_update(self, timestep, states):
 
@@ -316,7 +323,7 @@ class ConvenienceKinetics(Process):
         update = {port: {} for port in self.port_ids}
         update.update({'fluxes': fluxes})
 
-        # get exchange and update fields
+        # update exchanges
         for reaction_id, flux in fluxes.items():
             stoichiometry = self.reactions[reaction_id]['stoichiometry']
             for port_state_id, coeff in stoichiometry.items():
@@ -329,9 +336,9 @@ class ConvenienceKinetics(Process):
                         if port_id == 'external':
                             # convert exchange fluxes to counts with mmol_to_counts
                             delta = int((state_flux * mmol_to_counts).magnitude)
-                            existing_delta = update['fields'].get(
+                            existing_delta = update['exchanges'].get(
                                 state_id, {}).get('_value', 0)
-                            update['fields'][state_id] = existing_delta + delta
+                            update['exchanges'][state_id] = existing_delta + delta
                         else:
                             update[port_id][state_id] = (
                                 update[port_id].get(state_id, 0)
@@ -571,7 +578,11 @@ def test_convenience_kinetics(end_time=2520):
         'timestep': 1,
         'total_time': end_time}
 
-    return simulate_process_in_experiment(kinetic_process, settings)
+    experiment = process_in_experiment(kinetic_process, settings)
+
+    import ipdb; ipdb.set_trace()
+
+    return simulate_experiment(experiment, settings)
 
 
 def test_convenience_kinetics_correlated_to_reference():
