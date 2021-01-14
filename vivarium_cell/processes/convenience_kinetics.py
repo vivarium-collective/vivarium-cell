@@ -230,21 +230,23 @@ class ConvenienceKinetics(Process):
         super(ConvenienceKinetics, self).__init__(parameters)
 
         self.reactions = self.parameters['reactions']
-        self.initial_state = self.parameters['initial_state']
         kinetic_parameters = self.parameters['kinetic_parameters']
         self.port_ids = self.parameters['port_ids'] + self.parameters['added_port_ids']
 
         # make the kinetic model
         self.kinetic_rate_laws = KineticFluxModel(self.reactions, kinetic_parameters)
 
+    def initial_state(self, config=None):
+        return self.parameters['initial_state']
+
     def ports_schema(self):
 
         schema = {port_id: {} for port_id in self.port_ids}
-
-        for port, states in self.initial_state.items():
+        initial_state = self.initial_state()
+        for port, states in initial_state.items():
             for state_id in states:
                 schema[port][state_id] = {
-                    '_default': self.initial_state[port][state_id],
+                    '_default': initial_state[port][state_id],
                     '_emit': True}
 
         # exchanges
@@ -273,19 +275,6 @@ class ConvenienceKinetics(Process):
                 '_default': [0.5, 0.5],
             },
         }
-
-        # # dimensions
-        # schema['dimensions'] = {
-        #     'bounds': {
-        #         '_default': [1, 1],
-        #     },
-        #     'n_bins': {
-        #         '_default': [1, 1],
-        #     },
-        #     'depth': {
-        #         '_default': 1,
-        #     },
-        # }
 
         return schema
 
@@ -571,14 +560,19 @@ def test_convenience_kinetics(end_time=2520):
     config = get_glc_lct_config()
     kinetic_process = ConvenienceKinetics(config)
 
+    initial_state = kinetic_process.initial_state()
     settings = {
         'environment': {
             'volume': 1e-14 * units.L,
+            'concentrations': initial_state['external'],
         },
         'timestep': 1,
         'total_time': end_time}
 
-    experiment = process_in_experiment(kinetic_process, settings)
+    experiment = process_in_experiment(
+        process=kinetic_process,
+        settings=settings,
+        initial_state=initial_state)
 
     import ipdb; ipdb.set_trace()
 
