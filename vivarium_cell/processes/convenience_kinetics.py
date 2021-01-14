@@ -271,9 +271,6 @@ class ConvenienceKinetics(Process):
             'mmol_to_counts': {
                 '_default': 0.0 * units.L / units.mmol,
             },
-            'location': {
-                '_default': [0.5, 0.5],
-            },
         }
 
         return schema
@@ -561,6 +558,9 @@ def test_convenience_kinetics(end_time=2520):
     kinetic_process = ConvenienceKinetics(config)
 
     initial_state = kinetic_process.initial_state()
+    initial_state['external'] = {
+            'glc__D_e': 1.0,
+            'lcts_e': 1.0}
     settings = {
         'environment': {
             'volume': 1e-14 * units.L,
@@ -573,8 +573,6 @@ def test_convenience_kinetics(end_time=2520):
         process=kinetic_process,
         settings=settings,
         initial_state=initial_state)
-
-    import ipdb; ipdb.set_trace()
 
     return simulate_experiment(experiment, settings)
 
