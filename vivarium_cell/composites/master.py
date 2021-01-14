@@ -89,24 +89,21 @@ class Master(Composite):
         global_path = config['global_path']
         external_path = config['external_path']
         fields_path = config['fields_path']
-        dimensions_path = config['dimensions_path']
         return {
             'transport': {
                 'internal': ('metabolites',),
                 'external': external_path,
-                'fields': ('null',),  # metabolism's exchange is used
+                'exchanges': ('null',),  # metabolism's exchange is used
                 'fluxes': ('flux_bounds',),
                 'global': global_path,
-                'dimensions': dimensions_path,
             },
             'metabolism': {
                 'internal': ('metabolites',),
                 'external': external_path,
                 'reactions': ('reactions',),
-                'fields': fields_path,
+                'exchanges': fields_path,
                 'flux_bounds': ('flux_bounds',),
                 'global': global_path,
-                'dimensions': dimensions_path,
             },
             'transcription': {
                 'chromosome': ('chromosome',),
