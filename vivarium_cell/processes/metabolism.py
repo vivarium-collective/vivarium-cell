@@ -100,7 +100,7 @@ class Metabolism(Process):
     * **reactions**: Holds the IDs of the modeled metabolic reactions.
       The linked :term:`store` does not need to be shared with any other
       processes.
-    * **fields**: The environmental fields that will be updated with
+    * **exchanges**: The environmental fields that will be updated with
       cell intake and uptake.
     * **dimensions**: Holds the dimensions of the environment.
     * **flux_bounds**: The bounds on the FBA, which are imposed by the
@@ -138,6 +138,7 @@ class Metabolism(Process):
         'initial_mass': 1339 * units.fg,
         'global_deriver_key': 'global_deriver',
         'mass_deriver_key': 'mass_deriver',
+        'local_field_key': 'local_field',
         'time_step': 1,
     }
 
@@ -177,8 +178,6 @@ class Metabolism(Process):
 
         # TODO -- move this super up to the top of the init, and replace all or_default
         super(Metabolism, self).__init__(initial_parameters)
-        self.global_deriver_key = self.parameters['global_deriver_key']
-        self.mass_deriver_key = self.parameters['mass_deriver_key']
         self.initial_mass = self.parameters['initial_mass']
 
 
@@ -221,7 +220,7 @@ class Metabolism(Process):
         ports = [
             'internal',
             'external',
-            'fields',
+            'exchanges',
             'reactions',
             'flux_bounds',
             'global',
@@ -250,10 +249,10 @@ class Metabolism(Process):
                 '_emit': True,
             }
 
-        # fields
+        # exchanges
         for state in self.fba.external_molecules:
-            schema['fields'][state] = {
-                '_default': np.zeros((1, 1)),
+            schema['exchanges'][state] = {
+                '_default': 0.0,
             }
 
         # reactions
@@ -281,29 +280,20 @@ class Metabolism(Process):
                 '_default': 0.0 * units.L / units.mmol,
                 '_emit': True,
             },
-            'location': {
-                '_default': [0.5, 0.5],
-            }
-        }
-
-        # dimensions
-        schema['dimensions'] = {
-            'bounds': {
-                '_default': [1, 1],
-            },
-            'n_bins': {
-                '_default': [1, 1],
-            },
-            'depth': {
-                '_default': 1,
-            },
         }
 
         return schema
 
     def derivers(self):
         return {
-            self.mass_deriver_key: {
+            self.parameters['local_field_key']: {
+                'deriver': 'local_field',
+                'port_mapping': {
+                    'exchanges': 'exchanges',
+                },
+                'config': {}
+            },
+            self.parameters['mass_deriver_key']: {
                 'deriver': 'mass_deriver',
                 'port_mapping': {
                     'global': 'global',
@@ -312,7 +302,7 @@ class Metabolism(Process):
                     'from_path': ('..', '..'),
                 },
             },
-            self.global_deriver_key: {
+            self.parameters['global_deriver_key']: {
                 'deriver': 'globals_deriver',
                 'port_mapping': {
                     'global': 'global',
@@ -373,7 +363,7 @@ class Metabolism(Process):
                     internal_state_update[mol_id] = added_count
 
         # convert exchange fluxes to counts
-        field_updates = {
+        exchange_updates = {
             reaction: int((flux * mmol_to_counts).magnitude)
             for reaction, flux in exchange_fluxes.items()
         }
@@ -383,7 +373,7 @@ class Metabolism(Process):
         all_fluxes.update(exchange_reactions)
 
         return {
-            'fields': field_updates,
+            'exchanges': exchange_updates,
             'internal': internal_state_update,
             'reactions': all_fluxes,
         }

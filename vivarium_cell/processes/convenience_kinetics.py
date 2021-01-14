@@ -254,7 +254,7 @@ class ConvenienceKinetics(Process):
         if 'external' in schema:
             schema['exchanges'] = {
                 state_id: {
-                    '_default': np.ones((1, 1)),
+                    '_default': 0.0,
                 }
                 for state_id in schema['external'].keys()
             }
