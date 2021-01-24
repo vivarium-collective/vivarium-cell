@@ -425,7 +425,12 @@ def plot_snapshots(data, plot_config):
         plt.close(fig)
 
 
-def plot_tags(data, plot_config):
+def plot_tags(
+        data,
+        plot_config,
+        out_dir=None,
+        filename=None,
+):
     '''Plot snapshots of the simulation over time
 
     The snapshots depict the agents and the levels of tagged molecules
@@ -477,8 +482,8 @@ def plot_tags(data, plot_config):
     check_plt_backend()
 
     n_snapshots = plot_config.get('n_snapshots', 6)
-    out_dir = plot_config.get('out_dir', False)
-    filename = plot_config.get('filename', 'tags')
+    out_dir = out_dir or plot_config.get('out_dir')
+    filename = filename or plot_config.get('filename')
     agent_shape = plot_config.get('agent_shape', 'segment')
     background_color = plot_config.get('background_color', 'black')
     tagged_molecules = plot_config['tagged_molecules']
@@ -610,10 +615,15 @@ def plot_tags(data, plot_config):
 
     plt.rcParams.update({'font.size': original_fontsize})
     if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
+        if filename is None:
+            filename = 'tags'
         fig_path = os.path.join(out_dir, filename)
         fig.subplots_adjust(wspace=0.7, hspace=0.1)
         fig.savefig(fig_path, bbox_inches='tight')
         plt.close(fig)
+    else:
+        return fig
 
 def initialize_spatial_figure(bounds, fontsize=18):
 
