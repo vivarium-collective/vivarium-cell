@@ -24,17 +24,14 @@ Bibliography
 
 '''
 
-from __future__ import absolute_import, division, print_function
-
 import os
 
 import numpy as np
-from scipy import constants
 
-from vivarium.core.experiment import schema_for
 from vivarium.core.process import Process
 from vivarium.core.composition import (
-    simulate_process_in_experiment,
+    process_in_experiment,
+    simulate_experiment,
     flatten_timeseries,
     save_timeseries,
     load_timeseries,
@@ -153,7 +150,7 @@ class ConvenienceKinetics(Process):
 
      * A ``fluxes`` port is added with variable names equal to
        the IDs of the configured reactions.
-     * A ``fields`` port is added with the same variables as the
+     * A ``exchanges`` port is added with the same variables as the
        ``external`` port.
      * A ``global`` port is added with a variable named
        ``mmol_to_counts``, which is set by a :term:`deriver`, and
@@ -223,38 +220,41 @@ class ConvenienceKinetics(Process):
         ],
         'added_port_ids': [
             'fluxes',
-            'fields',
+            'exchanges',
             'global'
         ],
-        'global_deriver_key': 'global_deriver'}
+        'global_deriver_key': 'global_deriver',
+        'local_field_key': 'local_field'}
 
     def __init__(self, parameters=None):
         super(ConvenienceKinetics, self).__init__(parameters)
 
         self.reactions = self.parameters['reactions']
-        self.initial_state = self.parameters['initial_state']
         kinetic_parameters = self.parameters['kinetic_parameters']
         self.port_ids = self.parameters['port_ids'] + self.parameters['added_port_ids']
 
         # make the kinetic model
         self.kinetic_rate_laws = KineticFluxModel(self.reactions, kinetic_parameters)
 
+    def initial_state(self, config=None):
+        return self.parameters['initial_state']
+
     def ports_schema(self):
 
         schema = {port_id: {} for port_id in self.port_ids}
-
-        for port, states in self.initial_state.items():
+        initial_state = self.initial_state()
+        for port, states in initial_state.items():
             for state_id in states:
                 schema[port][state_id] = {
-                    '_default': self.initial_state[port][state_id],
+                    '_default': initial_state[port][state_id],
                     '_emit': True}
 
-        # fields
-        # Note: fields depends on a port called external
+        # exchanges
+        # Note: exchanges depends on a port called external
         if 'external' in schema:
-            schema['fields'] = {
+            schema['exchanges'] = {
                 state_id: {
-                    '_default': np.ones((1, 1)),
+                    '_default': 0.0,
                 }
                 for state_id in schema['external'].keys()
             }
@@ -271,34 +271,27 @@ class ConvenienceKinetics(Process):
             'mmol_to_counts': {
                 '_default': 0.0 * units.L / units.mmol,
             },
-            'location': {
-                '_default': [0.5, 0.5],
-            },
-        }
-
-        # dimiensions
-        schema['dimensions'] = {
-            'bounds': {
-                '_default': [1, 1],
-            },
-            'n_bins': {
-                '_default': [1, 1],
-            },
-            'depth': {
-                '_default': 1,
-            },
         }
 
         return schema
 
     def derivers(self):
         return {
+            self.parameters['local_field_key']: {
+                'deriver': 'local_field',
+                'port_mapping': {
+                    'exchanges': 'exchanges',
+                },
+                'config': {}
+            },
             self.parameters['global_deriver_key']: {
                 'deriver': 'globals_deriver',
                 'port_mapping': {
                     'global': 'global'},
                 'config': {
-                    'width': 1.0}}}
+                    'width': 1.0}
+            }
+        }
 
     def next_update(self, timestep, states):
 
@@ -316,7 +309,7 @@ class ConvenienceKinetics(Process):
         update = {port: {} for port in self.port_ids}
         update.update({'fluxes': fluxes})
 
-        # get exchange and update fields
+        # update exchanges
         for reaction_id, flux in fluxes.items():
             stoichiometry = self.reactions[reaction_id]['stoichiometry']
             for port_state_id, coeff in stoichiometry.items():
@@ -329,19 +322,9 @@ class ConvenienceKinetics(Process):
                         if port_id == 'external':
                             # convert exchange fluxes to counts with mmol_to_counts
                             delta = int((state_flux * mmol_to_counts).magnitude)
-                            existing_delta = update['fields'].get(
+                            existing_delta = update['exchanges'].get(
                                 state_id, {}).get('_value', 0)
-                            update['fields'][state_id] = {
-                                '_value': existing_delta + delta,
-                                '_updater': {
-                                    'updater': (
-                                        'update_field_with_exchange'),
-                                    'port_mapping': {
-                                        'global': 'global',
-                                        'dimensions': 'dimensions',
-                                    },
-                                },
-                            }
+                            update['exchanges'][state_id] = existing_delta + delta
                         else:
                             update[port_id][state_id] = (
                                 update[port_id].get(state_id, 0)
@@ -574,14 +557,24 @@ def test_convenience_kinetics(end_time=2520):
     config = get_glc_lct_config()
     kinetic_process = ConvenienceKinetics(config)
 
+    initial_state = kinetic_process.initial_state()
+    initial_state['external'] = {
+            'glc__D_e': 1.0,
+            'lcts_e': 1.0}
     settings = {
         'environment': {
             'volume': 1e-14 * units.L,
+            'concentrations': initial_state['external'],
         },
         'timestep': 1,
         'total_time': end_time}
 
-    return simulate_process_in_experiment(kinetic_process, settings)
+    experiment = process_in_experiment(
+        process=kinetic_process,
+        settings=settings,
+        initial_state=initial_state)
+
+    return simulate_experiment(experiment, settings)
 
 
 def test_convenience_kinetics_correlated_to_reference():

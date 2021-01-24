@@ -1,7 +1,7 @@
 import os
 
 from vivarium.library.units import units
-from vivarium.library.fasta import read_sequence
+from vivarium_cell.library.fasta import read_sequence
 from vivarium_cell.library.polymerize import generate_template
 from vivarium_cell.data.knowledge_base import KnowledgeBase
 from vivarium_cell.states.chromosome import Chromosome
