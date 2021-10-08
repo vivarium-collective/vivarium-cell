@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 
 from vivarium.library.units import Quantity, units
