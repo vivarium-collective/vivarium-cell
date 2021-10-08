@@ -1,4 +1,7 @@
 # vivarium-cell
+
+**WARNING: This library has been deprecated. Please see https://vivarium-collective.github.io for alternatives.**
+
 [vivarium-cell](https://github.com/vivarium-collective/vivarium-cell) is a library of configurable
  cell process and composites for vivarium projects.
 
@@ -11,7 +14,7 @@ $ pip install vivarium-cell
 ```
 
 # Setup in local repository
-Clone the repository, make a python environment, and install dependencies. 
+Clone the repository, make a python environment, and install dependencies.
 
 First install numpy:
 ```

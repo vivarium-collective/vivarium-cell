@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.1.5
+
+* Deprecate Vivarium Cell in favor of other libraries at
+  https://vivarium-collective.github.io.
+
 ## v0.0.24
 
 * Refactor analysis tool to make it easier for users to create their own
