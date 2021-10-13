@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 
 from vivarium.library.units import Quantity, units
@@ -19,4 +21,7 @@ from vivarium_cell.processes.local_field import LocalField
 process_registry.register(DeriveGlobals.name, DeriveGlobals)
 process_registry.register(LocalField.name, LocalField)
 
-# register updaters
+warnings.warn(
+    'Vivarium Cell is deprecated. '
+    'Please see https://vivarium-collective.github.io for alternatives.'
+)
